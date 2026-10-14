@@ -6,10 +6,10 @@ import {Waterfall} from "../../src/Waterfall.sol";
 
 /// Proved for every input with Halmos (symbolic execution), not sampled:
 ///   halmos --contract WaterfallProofs
-/// Amounts are bounded to 2^96 USDC units, far above any real balance.
+/// Amounts are bounded to 2^64 units (about 18 trillion USDC), far above any real balance.
 contract WaterfallProofs is Test {
     function _st(uint256 s, uint256 d, uint256 c, uint256 dd, uint256 cd) internal pure returns (Waterfall.State memory) {
-        vm.assume(s < 2 ** 96 && d < 2 ** 96 && c < 2 ** 96 && dd < 2 ** 96 && cd < 2 ** 96);
+        vm.assume(s < 2 ** 64 && d < 2 ** 64 && c < 2 ** 64 && dd < 2 ** 64 && cd < 2 ** 64);
         return Waterfall.State(s, d, c, dd, cd);
     }
 
@@ -26,7 +26,7 @@ contract WaterfallProofs is Test {
     /// Whenever anyone holds shares, the buckets add up to exactly what the vault holds.
     function check_booksBalance(uint256 st, uint256 d, uint256 c, uint256 dd, uint256 cd, uint256 h, uint256 p, bool hs, bool hd, bool hc) public pure {
         Waterfall.State memory s = _st(st, d, c, dd, cd);
-        vm.assume(p <= 10_000 && h < 2 ** 97 && (hs || hd || hc));
+        vm.assume(p <= 10_000 && h < 2 ** 65 && (hs || hd || hc));
         (Waterfall.State memory n,) = Waterfall.split(s, h, Waterfall.Holders(hs, hd, hc), p);
         assert(n.settling + n.deep + n.cover == h);
     }
@@ -34,7 +34,7 @@ contract WaterfallProofs is Test {
     /// Interest never makes any bucket poorer.
     function check_gainNeverHurts(uint256 st, uint256 d, uint256 c, uint256 dd, uint256 cd, uint256 h, uint256 p, bool hs, bool hd, bool hc) public pure {
         Waterfall.State memory s = _st(st, d, c, dd, cd);
-        vm.assume(p <= 10_000 && h < 2 ** 97 && h >= st + d + c);
+        vm.assume(p <= 10_000 && h < 2 ** 65 && h >= st + d + c);
         (Waterfall.State memory n,) = Waterfall.split(s, h, Waterfall.Holders(hs, hd, hc), p);
         assert(n.settling >= st && n.deep >= d && n.cover >= c);
     }

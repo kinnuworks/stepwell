@@ -19,8 +19,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
       - run: arc-forge test -vv
-      - run: FORK=1 arc-forge test --match-contract Fork -vv
+      - run: FORK=1 arc-forge test --match-contract Fork --isolate -vv
       - name: Symbolic proofs
+        timeout-minutes: 40
         run: |
           python3 -m pip install --quiet halmos
           ln -sf $HOME/bin/arc-forge $HOME/bin/forge
