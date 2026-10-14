@@ -1,0 +1,22 @@
+name: contracts
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: macos-14
+    defaults:
+      run:
+        working-directory: contracts
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Install Arc Foundry
+        run: |
+          gh release download v0.8.0-2 -R circlefin/arc-foundry -p '*aarch64-apple-darwin.tar.gz*'
+          shasum -a 256 -c *.sha256
+          tar -xzf *.tar.gz && mkdir -p $HOME/bin && mv forge $HOME/bin/arc-forge
+          echo "$HOME/bin" >> $GITHUB_PATH
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - run: arc-forge test -vv
+      - run: FORK=1 arc-forge test --match-contract Fork -vv
