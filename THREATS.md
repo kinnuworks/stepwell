@@ -1,24 +1,41 @@
 # Threat model
 
-Each threat names the test that covers it. Tests live in `contracts/test/`.
+Each threat names the test or proof that covers it. Tests live in `contracts/test/`. The first five came from an outside-style review of an earlier version, which confirmed each with an exploit test; the fixes and their regression tests are below.
 
 | Threat | What stops it | Test |
 |---|---|---|
-| An underwriter sees a loss coming and leaves before it is booked | Leaving needs three days' notice, and losses during the notice still land on the leaver | `test_underwriterNeedsNotice`, `invariant_noEarlyExit` |
-| An underwriter hands cover shares to someone else to dodge the notice | Cover shares cannot be transferred or approved | `test_coverSharesCannotMove` |
-| A loss wipes out the cover and old shares dilute the next underwriters | The cover token moves to a new epoch and old balances read as zero | `test_lossBeyondCoverWipesLayerAndReachesDepositors`, `test_noticeVoidedByWipe` |
-| A covered deposit dilutes cover below what was promised | Deposits are refused above the cover floor, and `maxDeposit` says how much room is left | `test_floorLimitsDeposits`, `test_noCoverMeansNoCoveredDeposits` |
-| Rounding in the vault moves value from existing holders to a newcomer | Shares are priced on what actually reached the vault, so the depositor carries their own rounding | `testFuzz_depositExitNeverProfits`, `invariant_coveredPriceHoldsWhileCovered` |
-| A donation inflates the share price to steal from the next depositor | Virtual shares (offset of 10^6) in every conversion | `test_inflationAttackDoesNotPay` |
-| The waterfall arithmetic is wrong in some sequence nobody thought of | An independent model runs beside the contract through random sequences and must agree to the unit; the rule itself is proved for every input | `invariant_matchesReferenceModel`, `test_everyEndStateIsReached`, `check_lossWithinCoverSparesDepositors`, `check_bigLossEmptiesCoverFirst`, `check_booksBalance`, `check_gainNeverHurts` |
-| The books claim more than the vault shares are worth | Losses are booked before every action; in-kind exits resync | `invariant_booksNeverExceedHoldings`, `invariant_sharesBackedByAssets` |
-| The vault is short of cash and depositors are trapped | Depositors can leave with the vault's own shares | `test_exitInKind` |
-| A blocklisted address makes a shared payout revert for everyone | Every payout is pulled by its owner; nothing pays a list in a loop | by design, no batch payouts |
-| An admin changes the rules | There is no owner, no pause and no upgrade path; parameters are fixed at creation | by construction |
+| Someone sees bad debt coming and makes a covered deposit just before it is booked, getting cover for free | New deposits wait one day in a warm-up bucket that earns and loses like a plain vault deposit before they are covered (a request-then-settle queue modelled on ERC-7540) | `test_jitDepositGetsNoCover` |
+| An underwriter keeps a matured notice open as a free exit option and leaves just before a loss | From the day notice is given, the noticed shares stop earning: the payout is capped at their value on that day, and they still carry losses. The claim window is one day | `test_noticedSharesStopEarning`, `invariant_noticeIsHonoured` |
+| A loss that later reverses is locked in, moving value from cover to depositors | A high-water mark: money coming back repays depositors' past losses, then the cover's, before any new interest is split | `test_recoveryRefillsCoverFirst`, `check_recoveryRestoresExactly` |
+| An underwriter sees a loss coming and leaves before it is booked | Three days' notice, losses during the notice still land on the leaver | `test_underwriterNeedsNotice` |
+| Cover shares are handed to someone else to dodge the notice | Cover shares cannot be transferred or approved | `test_coverSharesCannotMove` |
+| A loss wipes out the cover and old shares dilute the next underwriters | The cover token moves to a new epoch and old balances read as zero; the old layer's deficit is not inherited | `test_lossBeyondCoverWipesLayerAndReachesDepositors`, `test_noticeVoidedByWipe` |
+| A covered deposit dilutes cover below what was promised | Requests are refused above the cover floor | `test_floorLimitsRequests`, `test_noCoverMeansNoRequests` |
+| Rounding moves value from existing holders to a newcomer | Deposits are credited with what the new vault shares are worth, so the depositor carries their own rounding | `testFuzz_requestSettleExitNeverProfits`, `invariant_coveredPriceHoldsWhileCovered` |
+| A donation inflates the share price to steal from the next depositor | Virtual shares (offset 10^6) in every conversion | `test_inflationAttackDoesNotPay` |
+| The arithmetic is wrong in a sequence nobody thought of | A separately written model of the rules runs beside the contract through random sequences and must agree to the unit. It caught a real bug (a memory struct aliased in `Waterfall.split`), now fixed | `invariant_matchesModel`, `test_everyEndStateIsReached` |
+| The rule itself is wrong for some input | Four properties of the waterfall proved for every input with Halmos | `check_lossWithinCoverSparesDepositors`, `check_booksBalance`, `check_gainNeverHurts`, `check_recoveryRestoresExactly` |
+| The vault is short of cash and people are trapped | Depositors and underwriters can both leave with the vault's own shares | `test_maxWithdrawRespectsVaultLiquidity`, `test_exitInKind`, `test_claimCoverInKind` |
+| Integrators call `withdraw(maxWithdraw())` and it reverts | `maxWithdraw` and `maxRedeem` take the vault's reported liquidity into account | `test_maxWithdrawRespectsVaultLiquidity` |
+| Someone registers a Stepwell with useless terms and wallets show it as cover | The factory marks standard-terms Stepwells; `standardCoverageFor` returns only those, and the site reads only those | `test_registryOnlyVouchesForStandardTerms` |
+| Someone registers an impostor contract through the factory | The factory refuses creation code whose hash differs from the one fixed at deployment | by construction |
+| Losses in the real Morpho vault are not detected | Fork test on Arc mainnet state: the real Steakhouse Prime USDC adapter reports a 2% markdown, Vault V2 lowers its share price, and cover alone takes it | `test_fork_morphoBadDebtIsBookedAsLoss` |
+| The one-signature path through Multicall3From and Memo credits the wrong account | Fork test: the wallet itself ends up holding the request | `test_fork_oneSignatureDepositThroughMemo` |
+| The rehearsal operator key is stolen | The rehearsal vault is capped at 25 USDC of the team's own money, can lose at most 10% per call and at most once a minute | by construction |
+| A blocklisted address makes a shared payout revert for everyone | Every payout is pulled by its owner; nothing pays a list in a loop | by design |
+| An admin changes the rules | No owner, no pause, no upgrade path; parameters fixed at creation | by construction |
 | The history disappears when RPC nodes drop old receipts | The last 64 entries are kept in contract storage | `test_historyKeptOnChain` |
+
+Arc and Morpho details that shaped the code:
+
+- Morpho Vault V2 reports `maxDeposit` and `maxWithdraw` as 0 by design, so Stepwell reads 0 as "unknown" and lets the vault's own deposit or withdraw decide.
+- Morpho Vault V2 books interest and losses once per transaction and caches its totals, so deposits are credited from the shares minted, not from holdings before and after. Fork tests run with `--isolate` for the same reason.
+- USDC on Arc is native, with 18 decimals natively and 6 through its ERC-20 interface; Stepwell only uses the ERC-20 interface.
 
 Known limits that are not bugs:
 
-- Cover only covers a slice. A loss larger than the cover layer reaches depositors.
-- The contract trusts the underlying vault's `previewRedeem`. A malicious vault could report a fake loss, which would hurt the underwriters who chose to cover that vault. Each Stepwell covers exactly one vault, so that risk stays with the people who opted into it.
+- Cover covers a slice. A loss bigger than the cover layer reaches depositors.
+- A vault's management fee, if it ever exceeds interest, lowers the share price and is taken by cover like any loss.
+- Cover can leave. The floor only blocks new requests; the coverage figures show cover under notice.
+- The contract trusts the vault's `previewRedeem`. A malicious vault could fake a loss, which would hurt the underwriters who chose to cover that vault.
 - Unaudited.

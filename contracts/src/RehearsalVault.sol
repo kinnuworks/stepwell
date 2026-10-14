@@ -9,14 +9,19 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 /// @title RehearsalVault
 /// @notice A plain ERC-4626 vault holding a few of the Stepwell team's own dollars, with one
 ///         extra power: the rehearsal operator can mark it down, so anyone visiting the site can
-///         watch a real loss hit a real Stepwell on mainnet. Lost money goes to `sink`, which
-///         belongs to the team, and is put back with `refill`. It holds nobody else's money.
+///         watch a real loss hit a real Stepwell on mainnet. Lost money goes to `sink` and is put
+///         back with `refill`.
+/// @dev Because the operator can take money out, the vault is capped at `MAX_ASSETS` and a loss
+///      can happen at most once a minute and at most 10% at a time. Nobody but the team should
+///      deposit into it, and the site says so.
 contract RehearsalVault is ERC4626 {
     using SafeERC20 for IERC20;
 
     address public immutable operator;
     address public immutable sink;
-    uint256 public constant MAX_LOSS_BPS = 1_500;
+    uint256 public constant MAX_LOSS_BPS = 1_000;
+    uint256 public constant COOLDOWN = 60;
+    uint256 public constant MAX_ASSETS = 25e6;
     uint256 public lastLossAt;
 
     event Loss(uint256 bps, uint256 assets);
@@ -24,6 +29,7 @@ contract RehearsalVault is ERC4626 {
 
     error OnlyOperator();
     error TooMuch();
+    error TooSoon();
 
     constructor(IERC20 usdc, address operator_, address sink_)
         ERC20("Stepwell rehearsal vault", "swREH")
@@ -37,6 +43,7 @@ contract RehearsalVault is ERC4626 {
     function lose(uint256 bps) external returns (uint256 assets) {
         if (msg.sender != operator) revert OnlyOperator();
         if (bps == 0 || bps > MAX_LOSS_BPS) revert TooMuch();
+        if (block.timestamp < lastLossAt + COOLDOWN) revert TooSoon();
         assets = totalAssets() * bps / 10_000;
         lastLossAt = block.timestamp;
         IERC20(asset()).safeTransfer(sink, assets);
@@ -47,6 +54,15 @@ contract RehearsalVault is ERC4626 {
     function refill(uint256 assets) external {
         IERC20(asset()).safeTransferFrom(msg.sender, address(this), assets);
         emit Refill(assets);
+    }
+
+    function maxDeposit(address) public view override returns (uint256) {
+        uint256 t = totalAssets();
+        return t >= MAX_ASSETS ? 0 : MAX_ASSETS - t;
+    }
+
+    function maxMint(address r) public view override returns (uint256) {
+        return convertToShares(maxDeposit(r));
     }
 
     function _decimalsOffset() internal pure override returns (uint8) {

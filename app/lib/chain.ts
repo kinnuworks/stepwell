@@ -9,6 +9,10 @@ export type WellState = {
   address: Address;
   covered: number;
   cover: number;
+  settling: number;
+  coverUnderNotice: number;
+  coverDeficit: number;
+  warmupSeconds: number;
   coverBps: number;
   premiumBps: number;
   floorBps: number;
@@ -32,6 +36,10 @@ export async function readWell(address: Address): Promise<WellState> {
     address,
     covered: usd(c.coveredAssets),
     cover: usd(c.coverAssets),
+    settling: usd(c.settlingAssets),
+    coverUnderNotice: usd(c.coverUnderNotice),
+    coverDeficit: usd(c.coverDeficit),
+    warmupSeconds: Number(c.warmupSeconds),
     coverBps: Number(c.coverBps),
     premiumBps: Number(c.premiumBps),
     floorBps: Number(c.floorBps),
@@ -44,7 +52,7 @@ export async function readWell(address: Address): Promise<WellState> {
       time: Number(r.time),
       block: r.blockNumber,
       kind: r.kind,
-      amount: r.kind === 4 ? Number(r.amount) : usd(r.amount),
+      amount: usd(r.amount),
       deep: usd(r.deep),
       cover: usd(r.cover),
     })),
@@ -52,7 +60,7 @@ export async function readWell(address: Address): Promise<WellState> {
 }
 
 export const KIND_LABEL: Record<number, string> = {
-  1: "Covered deposit",
+  1: "Deposit requested, warming up",
   2: "Depositor left",
   3: "Underwriter put up cover",
   4: "Underwriter gave notice",
@@ -61,4 +69,6 @@ export const KIND_LABEL: Record<number, string> = {
   7: "Loss in the vault",
   8: "Cover used up and restarted",
   9: "Depositor left with vault shares",
+  10: "Deposit warmed up, now covered",
+  11: "Deposit request cancelled",
 };

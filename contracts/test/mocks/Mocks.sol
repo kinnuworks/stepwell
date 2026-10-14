@@ -25,6 +25,17 @@ contract MockVault is ERC4626 {
         return 6;
     }
 
+    uint256 public liquidityCap = type(uint256).max;
+
+    function setLiquidityCap(uint256 c) external {
+        liquidityCap = c;
+    }
+
+    function maxWithdraw(address owner) public view override returns (uint256) {
+        uint256 m = super.maxWithdraw(owner);
+        return m < liquidityCap ? m : liquidityCap;
+    }
+
     function lose(uint256 assets) external {
         IERC20(asset()).transfer(address(0xdead), assets);
     }

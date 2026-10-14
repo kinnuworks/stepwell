@@ -34,7 +34,7 @@
 .window__foot a { text-decoration: underline; text-underline-offset: 2px; }
 
 .proof-strip { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
-.stat { display: flex; flex-direction: column; gap: 2px; min-width: 170px; padding: 14px 18px; border-radius: var(--r-md); background: var(--surface); box-shadow: var(--ring); }
+.stat { display: flex; flex-direction: column; gap: 2px; flex: 1 1 170px; max-width: 240px; padding: 14px 18px; border-radius: var(--r-md); background: var(--surface); box-shadow: var(--ring); }
 .stat b { font: 700 22px/1.1 var(--font-display); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
 .stat span { font-size: 13px; color: var(--ink-3); }
 
@@ -73,3 +73,8 @@
   .timeline { grid-template-columns: 1fr; }
 }
 .books th + th, .books td + td { padding-left: 14px; }
+
+.split > *, .try > *, .hero--split .container > * { min-width: 0; }
+@media (max-width: 640px) { .hide-sm { display: none; } }
+
+.hero--split h1 { font-size: clamp(42px, 5vw, 66px); }

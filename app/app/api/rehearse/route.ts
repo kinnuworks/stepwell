@@ -25,6 +25,15 @@ export async function POST(req: Request) {
     const { action } = (await req.json().catch(() => ({}))) as { action?: string };
     const account = privateKeyToAccount(key);
     const wallet = createWalletClient({ account, chain: arc, transport: http(RPC_URL) });
+    // settle the team's own seed deposit on the rehearsal well once it has warmed up
+    const seed = process.env.SEED_DEPOSITOR as `0x${string}` | undefined;
+    if (seed) {
+      const claimable = await publicClient.readContract({ address: ADDR.drill, abi: stepwellAbi, functionName: "claimableDepositRequest", args: [0n, seed] });
+      if (claimable > 0n) {
+        const st = await wallet.writeContract({ address: ADDR.drill, abi: stepwellAbi, functionName: "settle", args: [seed] });
+        await publicClient.waitForTransactionReceipt({ hash: st });
+      }
+    }
     const t0 = Date.now();
     let hash: `0x${string}`;
     if (action === "rain") {
@@ -36,6 +45,9 @@ export async function POST(req: Request) {
       await publicClient.waitForTransactionReceipt({ hash: a });
       hash = await wallet.writeContract({ address: ADDR.rehearsalVault, abi: rehearsalAbi, functionName: "refill", args: [amount] });
     } else {
+      const last = await publicClient.readContract({ address: ADDR.rehearsalVault, abi: rehearsalAbi, functionName: "lastLossAt" });
+      const wait = Number(last) + 60 - Math.floor(Date.now() / 1000);
+      if (wait > 0) throw new Error(`The test vault can only lose money once a minute. Try again in ${wait} seconds.`);
       hash = await wallet.writeContract({ address: ADDR.rehearsalVault, abi: rehearsalAbi, functionName: "lose", args: [800n] });
     }
     await publicClient.waitForTransactionReceipt({ hash });

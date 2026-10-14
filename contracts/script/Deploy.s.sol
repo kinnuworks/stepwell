@@ -21,26 +21,28 @@ contract Deploy is Script {
         address operator = vm.envAddress("OPERATOR");
         vm.startBroadcast(pk);
 
-        StepwellFactory factory = new StepwellFactory();
+        bytes memory code = type(Stepwell).creationCode;
+        StepwellFactory factory = new StepwellFactory(keccak256(code));
         // the operator is also the sink: money a rehearsal "loses" goes to it, and it puts money back with refill
         RehearsalVault rehearsal = new RehearsalVault(USDC, operator, operator);
 
         // the rehearsal Stepwell uses a short notice so the whole cycle can be shown in minutes
         Stepwell drill = factory.create(
             rehearsal, "Stepwell rehearsal", "swDRILL",
-            Stepwell.Params(1500, 1000, 2000, 3500, 1500, 10 minutes, 7 days)
+            Stepwell.Params(1500, 1000, 2000, 3500, 1500, 10 minutes, 1 days, 60), code
         );
         Stepwell steak = factory.create(
-            STEAKHOUSE, "Stepwell on Steakhouse Prime USDC", "swSTEAK",
-            Stepwell.Params(1500, 1000, 2000, 3500, 1500, 3 days, 7 days)
+            STEAKHOUSE, "Stepwell on Steakhouse Prime USDC", "swSTEAK", factory.standardParams(), code
         );
 
         USDC.approve(address(drill), type(uint256).max);
         USDC.approve(address(steak), type(uint256).max);
         drill.depositCover(1.5e6, me);
-        drill.deposit(drill.maxDeposit(me) < 6e6 ? drill.maxDeposit(me) : 6e6, me);
+        drill.requestDeposit(drill.maxRequest() < 6e6 ? drill.maxRequest() : 6e6, me, me);
         steak.depositCover(0.75e6, me);
-        steak.deposit(steak.maxDeposit(me) < 4e6 ? steak.maxDeposit(me) : 4e6, me);
+        steak.requestDeposit(steak.maxRequest() < 4e6 ? steak.maxRequest() : 4e6, me, me);
+        // Both requests warm up before they are covered (60 seconds on the rehearsal well, a day
+        // on the real one). Anyone can then call settle(me); the site's relayer does it.
 
         // gas money for the rehearsal relayer
         USDC.transfer(operator, 1e6);

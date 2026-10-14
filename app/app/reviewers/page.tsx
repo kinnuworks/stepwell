@@ -16,10 +16,10 @@ export default function Reviewers() {
         <a className="t-small" href="/">← Back to Stepwell</a>
         <h1 className="t-h2" style={{ marginTop: 18 }}>For reviewers: three minutes.</h1>
         <ol className="limits" style={{ marginTop: 28, listStyle: "none" }}>
-          <li><b>1. Press “Start a dry season” on the home page.</b> A vault holding our own USDC loses 8% on Arc mainnet. The cover layer shrinks and covered deposits stay where they were. The receipt and the settlement time appear under the button. No wallet needed.</li>
+          <li><b>1. Press “Simulate an 8% vault loss” on the home page.</b> Our test vault, holding only our own USDC, sends 8% to our wallet on Arc mainnet, which is how bad debt looks from outside. The cover layer shrinks and covered deposits stay where they were. Press it again to watch cover run out. No wallet needed.</li>
           <li><b>2. Look at the hero.</b> That well is the Stepwell on {REAL_VAULT_NAME}, a real Morpho vault, read live from the chain.</li>
           <li><b>3. Read the contract.</b> <span className="mono">contracts/src/Stepwell.sol</span>, about 500 lines. The waterfall is in <span className="mono">_split</span>.</li>
-          <li><b>4. Run the tests.</b> <span className="mono">cd contracts &amp;&amp; arc-forge test</span>. 24 tests: unit, fuzz, five invariants checked against an independent model, and a walk that proves every end state was reached. <span className="mono">FORK=1 arc-forge test --match-contract Fork</span> runs against the real vault on mainnet state.</li>
+          <li><b>4. Run the tests.</b> <span className="mono">cd contracts &amp;&amp; arc-forge test</span>: 33 tests, including a regression test for each attack an earlier review found and five invariants checked against a separately written model. <span className="mono">FORK=1 arc-forge test --match-contract Fork --isolate</span>: three tests on Arc mainnet state, including bad debt in the real Morpho vault. <span className="mono">halmos --contract WaterfallProofs</span>: four properties proved for every input.</li>
         </ol>
         <h2 className="t-h3" style={{ marginTop: 48 }}>Contracts on Arc mainnet</h2>
         <div className="books-wrap" style={{ marginTop: 16 }}>
@@ -36,7 +36,7 @@ export default function Reviewers() {
         <ul className="limits" style={{ marginTop: 16 }}>
           <li>No audit. Amounts are a few dollars on purpose.</li>
           <li>Cover is a slice. A loss bigger than the cover reaches depositors, and the rehearsal can show that too.</li>
-          <li>Most of the money in these wells is ours. We say who else has joined in the README, by address.</li>
+          <li>Most of the money in these wells is ours. Anyone else who joins shows up in the on-chain history on the home page, by block.</li>
         </ul>
         <p className="t-small" style={{ marginTop: 32 }}><a href={REPO_URL}>Code, threat model and test logs on GitHub</a></p>
       </div>

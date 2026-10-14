@@ -122,9 +122,6 @@ export default function WellDrawing({ covered, cover, scaleTotal, startTotal }: 
         <path d={`M${fx} ${fy - 21}v12 M${fx} ${fy - 9}l-4 9 M${fx} ${fy - 9}l4 9 M${fx} ${fy - 18}l7 -6`} strokeWidth="1.4" />
         <path d={`M${fx + 5} ${fy - 33}h7l-1.2 6h-4.6z`} strokeWidth="1.2" />
       </g>
-      <text className="lbl" x={X0 - 4} y={G - 14}>Fig. 1 · underwriter, for scale</text>
-      <path d={`M${X0 + 66} ${G - 10}L${fx - 3} ${fy - 40}`} stroke="var(--ink)" strokeWidth="0.8" fill="none" opacity="0.7" />
-      <text className="lbl" x="16" y="24">Section A–A′</text>
 
       <rect x="14" y={FLOOR - 64} width="168" height={side + 36} fill="var(--surface)" opacity="0.94" />
       <rect x="24" y={FLOOR - 54} width={side} height={side} fill="var(--water-deep)" stroke="var(--ink)" strokeWidth="1" />

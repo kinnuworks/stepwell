@@ -17,16 +17,14 @@ export async function listVaults(): Promise<VaultRow[]> {
     const j = await r.json();
     items = j?.data?.vaultV2s?.items ?? [];
   } catch { /* Morpho's API is down; show only vaults we already cover */ }
-  items = items.filter((v) => (v.totalAssetsUsd ?? 0) >= 1).sort((a, b) => (b.totalAssetsUsd ?? 0) - (a.totalAssetsUsd ?? 0));
+  items = items.sort((a, b) => (b.totalAssetsUsd ?? 0) - (a.totalAssetsUsd ?? 0));
   const rows: VaultRow[] = [];
   for (const v of items) {
     let stepwells: VaultRow["stepwells"] = [];
     if (ADDR.factory !== "0x0000000000000000000000000000000000000000") {
       try {
-        const [list, cov] = await Promise.all([
-          publicClient.readContract({ address: ADDR.factory, abi: factoryAbi, functionName: "stepwellsFor", args: [v.address] }),
-          publicClient.readContract({ address: ADDR.factory, abi: factoryAbi, functionName: "coverageFor", args: [v.address] }),
-        ]);
+        // only Stepwells on the standard terms; anyone can create one with useless terms
+        const [list, cov] = await publicClient.readContract({ address: ADDR.factory, abi: factoryAbi, functionName: "standardCoverageFor", args: [v.address] });
         stepwells = list.map((a, i) => ({
           address: a,
           coverBps: Number(cov[i].coverBps),

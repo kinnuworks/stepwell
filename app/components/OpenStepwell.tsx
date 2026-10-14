@@ -4,6 +4,7 @@ import { useState } from "react";
 import { createWalletClient, custom, type Address } from "viem";
 import { ADDR, arc, explorer } from "@/lib/config";
 import { factoryAbi } from "@/lib/abi";
+import { STEPWELL_CREATION_CODE } from "@/lib/bytecode";
 
 type Eth = { request: (a: { method: string; params?: unknown[] }) => Promise<unknown> };
 
@@ -18,7 +19,7 @@ export default function OpenStepwell({ vault, name }: { vault: Address; name: st
       const wallet = createWalletClient({ account, chain: arc, transport: custom(eth) });
       const hash = await wallet.writeContract({
         address: ADDR.factory, abi: factoryAbi, functionName: "create",
-        args: [vault, `Stepwell on ${name}`, "swV", { floorBps: 1500, coverLowBps: 1000, coverHighBps: 2000, premiumHighBps: 3500, premiumLowBps: 1500, noticeSeconds: 259200, claimWindowSeconds: 604800 }],
+        args: [vault, `Stepwell on ${name}`, "swV", { floorBps: 1500, coverLowBps: 1000, coverHighBps: 2000, premiumHighBps: 3500, premiumLowBps: 1500, noticeSeconds: 259200, claimWindowSeconds: 86400, warmupSeconds: 86400 }, STEPWELL_CREATION_CODE],
       });
       setState({ text: "Opened.", hash });
     } catch (e) { setState({ text: e instanceof Error ? e.message.split("\n")[0] : "Failed." }); }

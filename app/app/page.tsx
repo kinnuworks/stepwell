@@ -1,4 +1,4 @@
-import { HeroWell, Rehearsal, Books, DepositPanel, LiveStats } from "@/components/Live";
+import { HeroWell, Rehearsal, Books, DepositPanel, LiveStats, StakeBadge } from "@/components/Live";
 import Reveal from "@/components/Reveal";
 import { ADDR, REPO_URL, REAL_VAULT_NAME, explorer } from "@/lib/config";
 
@@ -29,17 +29,18 @@ export default function Home() {
         <section className="hero hero--split">
           <div className="container">
             <div>
-              <span className="badge badge--dot">Live on Arc mainnet</span>
-              <h1>When a vault loses money, the surface goes <em className="t-serif">first.</em></h1>
+              <StakeBadge />
+              <h1>When a vault loses money, underwriters pay <em className="t-serif">first.</em></h1>
               <p className="lead">
-                Stepwell is first-loss cover for USDC in Morpho vaults on Arc. Underwriters hold the top layer of the money and
-                take any loss before depositors do. Depositors pay for it with a slice of their interest, never out of pocket.
+                Stepwell is first-loss cover for USDC in Morpho vaults on Arc. Underwriters take any loss before covered depositors do,
+                and depositors pay for that with a slice of their interest, never out of pocket. If a loss is bigger than the cover,
+                the rest reaches depositors, and this page shows you exactly how much cover there is.
               </p>
               <div className="cta-row">
-                <a className="btn btn-candy btn-lg" href="#try">Watch a loss happen</a>
+                <a className="btn btn-candy btn-lg" href="#try">Simulate a loss on mainnet</a>
                 <a className="btn btn-outline btn-lg" href="#apps">Add cover to your app</a>
               </div>
-              <p className="trust"><span>No owner key</span><span>Depositors leave any time</span><span>Unaudited, small amounts</span></p>
+              <p className="trust"><span>No owner key</span><span>Covered depositors leave any time</span><span>Unaudited, small amounts</span></p>
             </div>
             <div className="stage">
               <HeroWell />
@@ -54,12 +55,14 @@ export default function Home() {
         <section className="section" id="how">
           <div className="container">
             <div className="section-head">
-              <div className="eyebrow"><span className="dot" />Why a stepwell</div>
-              <h2>A stepwell keeps a town in water through the dry season.</h2>
+              <div className="eyebrow"><span className="dot" />How it works</div>
+              <h2>One vault, two layers, one rule about who pays.</h2>
               <p className="lead">
-                When the level drops, the surface goes and the deep water stays. Stepwell does that with money: one deposit, two layers,
-                and a rule about which layer pays when a vault has a bad month.
+                Arc asked for exactly this in its request for builders: vault-loss protection bundled into deposit flows, paid for out of yield,
+                with coverage figures any app can read. The name comes from Indian stepwells, where the surface water goes first in a drought
+                and the deep water stays.
               </p>
+              <p className="t-small" style={{ marginTop: 10 }}><a href="https://www.arc.io/blog/the-unfinished-business-of-finance-machine-commerce-and-global-money" target="_blank" rel="noreferrer" style={{ textDecoration: "underline" }}>Read Arc&apos;s request for builders</a></p>
             </div>
             <div className="grid grid-2">
               <div className="card card--flat">
@@ -115,19 +118,20 @@ export default function Home() {
 
             <div className="split split--flip">
               <div>
-                <div className="eyebrow">Notice</div>
-                <h3>Underwriters can&apos;t step off the stair when they see the water falling.</h3>
+                <div className="eyebrow">No gaming it</div>
+                <h3>Nobody can jump in before a loss or out just ahead of one.</h3>
                 <p className="lead">
-                  Leaving the cover layer takes three days&apos; notice, and a loss that lands during those three days still lands on
-                  them. Depositors can leave at any moment, with USDC or, if the vault is short of cash, with the vault shares themselves.
+                  A new covered deposit spends one day earning and losing like a plain vault deposit before it is covered, so seeing bad debt
+                  coming doesn&apos;t buy free cover. An underwriter who wants out gives three days&apos; notice, stops earning that day and
+                  still carries losses until they leave.
                 </p>
-                <div className="chips"><span className="chip">Notice carries losses</span><span className="chip">Exit in kind</span><span className="chip">Cover shares can&apos;t be sold on</span></div>
+                <div className="chips"><span className="chip">One-day warm-up</span><span className="chip">Notice carries losses, earns nothing</span><span className="chip">Cover shares can&apos;t be sold on</span><span className="chip">Exit in kind if the vault is short of cash</span></div>
               </div>
               <div className="stage stage--soft">
                 <div className="timeline" aria-hidden="true">
-                  <div><b>Day 0</b>Gives notice. Still earning, still exposed.</div>
+                  <div><b>Day 0</b>Gives notice. Stops earning from today. Still exposed to losses.</div>
                   <div><b>Day 0 to 3</b>A loss in the vault comes out of their share like everyone else&apos;s cover.</div>
-                  <div><b>Day 3 to 10</b>Collects what is left. After day 10 the notice lapses.</div>
+                  <div><b>Day 3 to 4</b>Collects what is left, in USDC or vault shares. After day 4 the notice lapses.</div>
                 </div>
               </div>
             </div>
@@ -135,10 +139,11 @@ export default function Home() {
             <div className="split">
               <div>
                 <div className="eyebrow">If cover runs out</div>
-                <h3>A buffer can run out, and we say so on the first screen.</h3>
+                <h3>A buffer can run out, and it refills first.</h3>
                 <p className="lead">
-                  If a loss is bigger than the cover, the cover layer goes to zero first and the rest reaches depositors. The old cover
-                  shares are voided, and a fresh layer can start the next day without inheriting the last one&apos;s debt.
+                  If a loss is bigger than the cover, the cover layer goes to zero first and the rest reaches depositors. If money comes
+                  back later, it repays depositors&apos; loss first, then the cover&apos;s, before anyone earns again. Wiped-out cover shares
+                  are voided, so a fresh layer never inherits the last one&apos;s debt.
                 </p>
               </div>
               <div className="stage stage--soft">
@@ -162,8 +167,8 @@ export default function Home() {
           <div className="container">
             <div className="section-head">
               <div className="eyebrow"><span className="dot" />Try it on this page</div>
-              <h2>Make it rain. Or don&apos;t.</h2>
-              <p className="lead">Every press is a real transaction on Arc mainnet. The receipt and the time it took to settle appear under the button.</p>
+              <h2>Watch cover take a loss, on mainnet.</h2>
+              <p className="lead">Every press is a real transaction on Arc mainnet. The receipt and the time from your click to a final result appear under the button.</p>
             </div>
             <Rehearsal />
           </div>
@@ -218,7 +223,7 @@ c.lossAbsorbed  `}<span className="c">// losses cover has already taken</span>{`
             <div className="section-head">
               <div className="eyebrow"><span className="dot" />{REAL_VAULT_NAME} on Morpho</div>
               <h2>Deposit with cover, or be the cover.</h2>
-              <p className="lead">Same vault, same interest. The only question is which layer you want to stand in.</p>
+              <p className="lead">Same vault, same interest. The only question is which layer you want to stand in. Figures below use the vault&apos;s rate today.</p>
             </div>
             <DepositPanel />
           </div>
@@ -243,11 +248,11 @@ c.lossAbsorbed  `}<span className="c">// losses cover has already taken</span>{`
             </div>
             <div className="grid grid-3" style={{ gridAutoRows: "1fr" }}>
               {[
-                ["M9 12l2 2 4-4M5 4h14v16H5z", "Tested against a second model", "A deliberately plain model of the waterfall runs beside the contract through thousands of random deposits, exits, gains and losses. They have to agree to the unit."],
-                ["M12 3v18M3 12h18", "Every end state reached", "A test walks 4,000 random steps and fails unless it saw cover wiped out, cover pierced, a notice claimed, an exit in kind, a deposit refused and a restart from empty."],
+                ["M9 12l2 2 4-4M5 4h14v16H5z", "Checked against a second model", "A separately written model of the rules runs beside the contract through thousands of random actions and must agree to the unit. It already caught one real bug, which is fixed."],
+                ["M12 3v18M3 12h18", "Every end state reached", "A random walk of 6,000 steps fails unless it reaches cover wiped out, cover pierced, recovery refilling cover, a notice claimed, a deposit settled and cancelled, an exit in kind, a deposit refused and a restart from empty."],
                 ["M4 7h16M4 12h16M4 17h10", "Five invariants", "The books never exceed the vault holdings. Covered shares never lose value while cover remains. Nobody redeems more than exists. No underwriter leaves early. The model matches."],
                 ["M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z", "No owner, no upgrades", "Every parameter is fixed when a Stepwell is created. There is no admin key, no pause and no way to change the code."],
-                ["M3 12h4l3-8 4 16 3-8h4", "Run against the real vault", `A fork test deposits into ${REAL_VAULT_NAME} on Arc mainnet state and gets the money back out.`],
+                ["M3 12h4l3-8 4 16 3-8h4", "Bad debt on the real vault", `Fork tests on Arc mainnet state make ${REAL_VAULT_NAME}'s Morpho adapter report a 2% markdown, the way Vault V2 books bad debt, and check that cover alone pays.`],
                 ["M4 4h16v12H4zM8 20h8", "Arc-native", "USDC is the gas and the asset. Multicall3From makes approve and deposit one signature. Arc's Memo contract tags deposits by app."],
                 ["M5 12h14M12 5l7 7-7 7", "Proved, not sampled", "The loss rule is one pure function, and four of its properties are proved for every possible input with symbolic execution: losses within cover never touch depositors, the books always balance."],
               ].map(([d, t, p], i) => (
@@ -266,6 +271,20 @@ c.lossAbsorbed  `}<span className="c">// losses cover has already taken</span>{`
           </div>
         </section>
 
+        <section className="section">
+          <div className="container" style={{ maxWidth: 760 }}>
+            <div className="section-head section-head--left">
+              <div className="eyebrow">Next</div>
+              <h2>What a grant would pay for.</h2>
+            </div>
+            <ul className="limits">
+              <li><b>Seed cover on a large vault.</b> Put the grant into the cover layer of a Stepwell on Galaxy USDC or Keyrock Prime USDC, so the first real depositors have something under them.</li>
+              <li><b>One wallet integration.</b> Wire the SDK into one Earn Kit wallet or savings app, so its users see a cover figure beside each vault and can choose a covered deposit.</li>
+              <li><b>Prepare for an audit.</b> Freeze the contracts, write the spec the tests already encode, and open a contest before any real size goes in.</li>
+            </ul>
+          </div>
+        </section>
+
         <section className="section section--alt">
           <div className="container" style={{ maxWidth: 760 }}>
             <div className="section-head section-head--left">
@@ -275,7 +294,9 @@ c.lossAbsorbed  `}<span className="c">// losses cover has already taken</span>{`
             <ul className="limits">
               <li><b>It covers a slice, not everything.</b> Cover is as thick as the money underwriters put up, at least 15% of the well when a deposit is made. A total loss of the vault would reach depositors.</li>
               <li><b>It is unaudited.</b> The contracts add their own risk on top of the vault&apos;s. Amounts here are small on purpose.</li>
-              <li><b>Yields are low right now.</b> The large USDC vaults on Arc pay about 2.5% a year, so premiums are small in dollars. The arithmetic is the same at any rate.</li>
+              <li><b>Yields are low right now.</b> The large USDC vaults on Arc pay about 3% a year, so premiums are small in dollars. The arithmetic is the same at any rate.</li>
+              <li><b>Vault fees count as losses.</b> If a vault&apos;s management fee ever exceeds its interest, the share price dips and the cover layer takes it.</li>
+              <li><b>Cover can leave.</b> The 15% floor only blocks new deposits. Underwriters can still give notice, which the coverage figures show as cover under notice.</li>
               <li><b>Exits depend on the vault&apos;s cash.</b> If the vault is short of liquidity, a depositor can still leave with vault shares instead of USDC.</li>
             </ul>
           </div>
@@ -287,8 +308,9 @@ c.lossAbsorbed  `}<span className="c">// losses cover has already taken</span>{`
             <div className="faq">
               {[
                 ["Who pays the premium?", "Depositors, out of interest the vault has already earned. Nobody sends a separate payment. If the vault earns nothing, nobody pays anything."],
-                ["Why would anyone underwrite?", "With 15% cover and a quarter of interest passed up, underwriters earn about 2.4 times what the vault pays. The trade is that a loss takes their money first."],
-                ["What stops an underwriter leaving just before a loss?", "Three days' notice, and losses during those three days still hit them. Cover shares can't be transferred, so they can't be sold to someone else either."],
+                ["Why would anyone underwrite?", "With 15% cover and a quarter of interest passed up, underwriters earn about 2.4 times what the vault pays, around 7.5% a year at today's rate. The trade is that a loss takes their money first."],
+                ["Why does my deposit wait a day?", "So nobody can see bad debt coming and buy cover just before it is booked. For that day your deposit earns and loses like a plain vault deposit. After it, anyone can settle it into covered shares, and the site does it for you."],
+                ["What stops an underwriter leaving just before a loss?", "Three days' notice, losses during those three days still hit them, and from the day they give notice they stop earning. Cover shares can't be transferred, so they can't be sold to someone else either."],
                 ["Is my money stuck if the vault is short of cash?", "No. Covered depositors can leave with the vault's own shares, which they can redeem later or hold."],
                 ["Can I add this to my app?", "Yes. The covered share is an ERC-4626 vault, and the factory tells any app how well a vault is covered in one read. Anyone can open a Stepwell on any vault."],
                 ["Why Arc?", "USDC is both the money and the gas, settlement is final in under a second, and the Morpho vaults Arc's Earn Kit lists are where this money already sits. Arc also asked for exactly this in its request for builders."],

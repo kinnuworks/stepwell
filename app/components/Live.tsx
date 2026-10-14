@@ -28,7 +28,7 @@ export function useWell(address: Address, every = 6000) {
 function Readout({ s }: { s: WellState }) {
   return (
     <div className="well-readout">
-      <div><div className="k">Covered deposits</div><div className="v">{money(s.covered)}</div><div className="d">exit any time</div></div>
+      <div><div className="k">Covered deposits</div><div className="v">{money(s.covered)}</div><div className="d">{s.settling > 0.005 ? `+ ${money(s.settling)} warming up` : "exit any time"}</div></div>
       <div><div className="k">First-loss cover</div><div className="v">{money(s.cover)}</div><div className="d">{(s.coverBps / 100).toFixed(1)}% of the well</div></div>
       <div><div className="k">Losses absorbed</div><div className="v">{money(s.lossAbsorbed)}</div><div className="d">{money(s.lossPassedThrough)} reached depositors</div></div>
     </div>
@@ -83,17 +83,17 @@ export function Rehearsal() {
       if (!r.ok) throw new Error(j.error);
       const after = await readWell(ADDR.drill);
       await refresh();
-      setRuns((x) => [{ label: action === "drought" ? "Dry season, vault −8%" : "Rain, money put back", hash: j.hash, ms: j.settledMs }, ...x].slice(0, 4));
+      setRuns((x) => [{ label: action === "drought" ? "Vault lost 8%" : "Money put back", hash: j.hash, ms: j.settledMs }, ...x].slice(0, 4));
       if (action === "drought") {
         const lost = before.s + before.j - (after.covered + after.cover);
         const fromCover = before.j - after.cover;
         setMsg({
           text: after.lossPassedThrough > state.lossPassedThrough
             ? `The loss was bigger than the cover. Underwriters lost everything first, and depositors are down ${money(before.s - after.covered)}. Cover is a buffer, and a buffer can run out.`
-            : `The vault lost ${money(lost)}. ${money(fromCover)} of it came out of the cover. Depositors still have ${money(after.covered)}. Final in ${(j.settledMs / 1000).toFixed(2)} seconds.`,
+            : `The vault lost ${money(lost)}. ${money(fromCover)} of it came out of the cover. Covered depositors still have ${money(after.covered)}. Settled and final ${(j.settledMs / 1000).toFixed(2)} seconds after you pressed.`,
         });
       } else {
-        setMsg({ text: `The money is back. Interest is split as usual: most to depositors, a slice to the underwriters.` });
+        setMsg({ text: `The money is back, and it went to the cover layer first, because cover is owed what it lost before anyone earns again.` });
       }
     } catch (e) {
       setMsg({ text: e instanceof Error ? e.message : "Something went wrong.", err: true });
@@ -106,15 +106,16 @@ export function Rehearsal() {
   return (
     <div className="try">
       <div className="card">
-        <div className="eyebrow"><span className="dot" />Real money, real chain</div>
+        <div className="eyebrow"><span className="dot" />Real transactions on Arc mainnet</div>
         <h3 className="t-h3" style={{ marginTop: 12 }}>Go on, break it.</h3>
         <p className="t-small" style={{ marginTop: 10 }}>
-          This well sits on a small vault holding our own dollars. Press the button and the vault loses 8% for real on Arc mainnet.
-          Watch which water goes. No wallet needed; we pay the gas.
+          This well sits on a small test vault holding our own {state ? money(state.covered + state.cover + state.settling) : "few dollars"}.
+          The button makes that vault send 8% of its money to our wallet, which is exactly how bad debt looks from outside. Watch the cover take it.
+          Press it twice to see cover run out. No wallet needed; we pay the gas.
         </p>
         <div className="cta-row" style={{ justifyContent: "flex-start", marginTop: 20 }}>
-          <button className="btn btn-candy" disabled={busy || !state} onClick={() => go("drought")}>Start a dry season</button>
-          <button className="btn btn-outline" disabled={busy || !state} onClick={() => go("rain")}>Let it rain</button>
+          <button className="btn btn-candy" disabled={busy || !state} onClick={() => go("drought")}>Simulate an 8% vault loss</button>
+          <button className="btn btn-outline" disabled={busy || !state} onClick={() => go("rain")}>Put the money back</button>
         </div>
         <p className={"status" + (msg?.err ? " err" : "")} aria-live="polite">{msg?.text}</p>
         {runs.length > 0 && (
@@ -122,7 +123,7 @@ export function Rehearsal() {
             {runs.map((r) => (
               <div className="receipt" key={r.hash}>
                 <span>{r.label}</span>
-                <a href={explorer("tx", r.hash)} target="_blank" rel="noreferrer">{short(r.hash)} · {r.ms} ms</a>
+                <a href={explorer("tx", r.hash)} target="_blank" rel="noreferrer">{short(r.hash)} · {(r.ms / 1000).toFixed(2)} s round trip</a>
               </div>
             ))}
           </div>
@@ -214,7 +215,7 @@ export function DepositPanel({ appRef: fixedRef }: { appRef?: string }) {
       if (value <= 0n) throw new Error("Enter an amount.");
       const wallet = createWalletClient({ account, chain: arc, transport: custom(eth) });
       const call = mode === "deposit"
-        ? encodeFunctionData({ abi: stepwellAbi, functionName: "deposit", args: [value, account] })
+        ? encodeFunctionData({ abi: stepwellAbi, functionName: "requestDeposit", args: [value, account, account] })
         : encodeFunctionData({ abi: stepwellAbi, functionName: "depositCover", args: [value, account] });
       setMsg({ text: "Confirm in your wallet. Approval and deposit go in one signature, tagged with this app's memo." });
       const hash = await wallet.writeContract({
@@ -227,13 +228,49 @@ export function DepositPanel({ appRef: fixedRef }: { appRef?: string }) {
       const t0 = Date.now();
       await publicClient.waitForTransactionReceipt({ hash });
       await refresh();
-      setMsg({ text: `Done. Final in ${((Date.now() - t0) / 1000).toFixed(2)} seconds.`, hash });
+      setMsg({
+        text: mode === "deposit"
+          ? `Done in ${((Date.now() - t0) / 1000).toFixed(2)} seconds. Your deposit earns from now and is covered after a one-day warm-up. Come back then and press Settle, or anyone can settle it for you.`
+          : `Done in ${((Date.now() - t0) / 1000).toFixed(2)} seconds. You are now part of the cover.`,
+        hash,
+      });
     } catch (e) {
       setMsg({ text: e instanceof Error ? e.message.split("\n")[0] : "The transaction did not go through.", err: true });
     }
   }
 
-  const room = state ? Math.max(0, state.cover * 10000 / state.floorBps - state.cover - state.covered) : 0;
+  const room = state ? Math.max(0, state.cover * 10000 / state.floorBps - state.cover - state.covered - state.settling) : 0;
+  const [req, setReq] = useState<{ assets: number; readyAt: number } | null>(null);
+  useEffect(() => {
+    if (!account) return;
+    let stop = false;
+    const load = async () => {
+      const [shares, readyAt] = await publicClient.readContract({ address: ADDR.real, abi: stepwellAbi, functionName: "requests", args: [account] });
+      const [pend, claim] = await Promise.all([
+        publicClient.readContract({ address: ADDR.real, abi: stepwellAbi, functionName: "pendingDepositRequest", args: [0n, account] }),
+        publicClient.readContract({ address: ADDR.real, abi: stepwellAbi, functionName: "claimableDepositRequest", args: [0n, account] }),
+      ]);
+      if (!stop) setReq(shares > 0n ? { assets: Number(pend + claim) / 1e6, readyAt: Number(readyAt) } : null);
+    };
+    load();
+    const t = setInterval(load, 10000);
+    return () => { stop = true; clearInterval(t); };
+  }, [account, msg]);
+
+  async function settleNow() {
+    if (!eth || !account) return;
+    try {
+      const wallet = createWalletClient({ account, chain: arc, transport: custom(eth) });
+      const hash = await wallet.writeContract({ address: ADDR.real, abi: stepwellAbi, functionName: "settle", args: [account] });
+      await publicClient.waitForTransactionReceipt({ hash });
+      await refresh();
+      setMsg({ text: "Settled. Your deposit is covered now.", hash });
+    } catch (e) {
+      setMsg({ text: e instanceof Error ? e.message.split("\n")[0] : "Could not settle yet.", err: true });
+    }
+  }
+  const rate = useRate();
+  const y = state && rate !== null ? yields(rate, state) : null;
   return (
     <div className="card card--raised" style={{ maxWidth: 460, marginInline: "auto" }}>
       <div className="segmented">
@@ -242,8 +279,12 @@ export function DepositPanel({ appRef: fixedRef }: { appRef?: string }) {
       </div>
       <p className="t-small" style={{ marginTop: 14 }}>
         {mode === "deposit"
-          ? `Your USDC goes into ${REAL_VAULT_NAME} on Morpho. If the vault loses money, the cover layer pays first. You give up ${state ? (state.premiumBps / 100).toFixed(0) : "about 25"}% of your interest for it, and you can leave any time.`
-          : "You earn a slice of every depositor's interest on top of the vault's own rate. A loss takes your money first. Leaving needs three days' notice, and you still carry losses while you wait."}
+          ? y
+            ? `Your USDC goes into ${REAL_VAULT_NAME} on Morpho, which pays ${pct(y.vault)} a year. You keep ${pct(y.depositor)}, and the other ${pct(y.vault - y.depositor)} buys cover: the first ${state ? ((state.coverBps) / 100).toFixed(1) : "15"}% of any loss is someone else's. It is covered after a one-day warm-up, and you can leave any time.`
+            : `Your USDC goes into ${REAL_VAULT_NAME} on Morpho. If the vault loses money, the cover layer pays first. You give up part of your interest for it, and you can leave any time.`
+          : y
+            ? `The vault pays ${pct(y.vault)}. Underwriters earn about ${pct(y.underwriter)} a year today, because depositors pass part of their interest up. A loss takes your money first. Leaving needs three days' notice, and from the day you give it you stop earning but still carry losses.`
+            : "You earn a slice of every depositor's interest on top of the vault's own rate. A loss takes your money first. Leaving needs three days' notice, and from the day you give it you stop earning but still carry losses."}
       </p>
       <div className="field">
         <label htmlFor="amt">Amount in USDC</label>
@@ -255,12 +296,56 @@ export function DepositPanel({ appRef: fixedRef }: { appRef?: string }) {
           ? <button className="btn btn-candy" style={{ width: "100%" }} onClick={submit}>{mode === "deposit" ? "Deposit with cover" : "Put up cover"}</button>
           : <button className="btn btn-ink" style={{ width: "100%" }} onClick={connect}>Connect a wallet</button>}
       </div>
+      {req && (
+        <div className="receipt" style={{ marginTop: 14 }}>
+          <span>{money(req.assets)} warming up</span>
+          {Date.now() / 1000 >= req.readyAt
+            ? <button className="btn btn-outline btn-sm" onClick={settleNow}>Settle now</button>
+            : <span>covered from {new Date(req.readyAt * 1000).toLocaleString()}</span>}
+        </div>
+      )}
       <p className={"status" + (msg?.err ? " err" : "")} aria-live="polite">
         {msg?.text} {msg?.hash && <a className="mono" href={explorer("tx", msg.hash)} target="_blank" rel="noreferrer">{short(msg.hash)}</a>}
       </p>
       <p className="t-micro">Unaudited. Keep it to amounts you are happy to lose.</p>
     </div>
   );
+}
+
+const pct = (n: number) => (n * 100).toFixed(2) + "%";
+
+export function useRate() {
+  const [apy, setApy] = useState<number | null>(null);
+  useEffect(() => { fetch("/api/rate").then((r) => r.json()).then((j) => setApy(j.apy)).catch(() => setApy(null)); }, []);
+  return apy;
+}
+
+/** What each layer earns at today's vault rate, before any loss. */
+export function yields(apy: number, s: WellState) {
+  const p = s.premiumBps / 10000;
+  const depositor = apy * (1 - p);
+  const underwriter = s.cover > 0 ? apy * (1 + (p * s.covered) / s.cover) : apy;
+  return { vault: apy, depositor, underwriter };
+}
+
+function RateStats({ s }: { s: WellState }) {
+  const rate = useRate();
+  if (rate === null) return <div className="stat"><b>{(s.premiumBps / 100).toFixed(0)}%</b><span>of interest passed to cover today</span></div>;
+  const y = yields(rate, s);
+  return (
+    <>
+      <div className="stat"><b>{pct(y.depositor)}</b><span>covered depositors earn ({pct(y.vault)} in the vault)</span></div>
+      <div className="stat"><b>{pct(y.underwriter)}</b><span>underwriters earn for standing first</span></div>
+    </>
+  );
+}
+
+/** The badge in the hero: says honestly how much is at stake and whose it is. */
+export function StakeBadge() {
+  const real = useWell(ADDR.real, 15000).state;
+  const drill = useWell(ADDR.drill, 15000).state;
+  const total = real && drill ? real.covered + real.cover + real.settling + drill.covered + drill.cover + drill.settling : null;
+  return <span className="badge badge--dot">Live on Arc mainnet{total !== null ? ` · ${money(total)} at stake, mostly ours` : ""}</span>;
 }
 
 export function LiveStats() {
@@ -272,7 +357,7 @@ export function LiveStats() {
       <div className="stat"><b>{money(real.covered + drill.covered)}</b><span>covered deposits on Arc</span></div>
       <div className="stat"><b>{money(real.cover + drill.cover)}</b><span>first-loss cover standing</span></div>
       <div className="stat"><b>{money(real.lossAbsorbed + drill.lossAbsorbed)}</b><span>losses taken by cover</span></div>
-      <div className="stat"><b>{(real.premiumBps / 100).toFixed(0)}%</b><span>of interest passed to cover today</span></div>
+      <RateStats s={real} />
     </div>
   );
 }
