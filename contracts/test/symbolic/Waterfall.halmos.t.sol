@@ -40,10 +40,11 @@ contract WaterfallProofs is Test {
     }
 
     /// High-water mark: a loss inside the cover, followed by the same amount coming back,
-    /// restores both layers exactly.
+    /// restores both layers exactly. A loss of the whole cover is not a recovery case: Stepwell
+    /// wipes that layer and resets what it is owed (Stepwell._sync), so `l == c` is excluded.
     function check_recoveryRestoresExactly(uint256 d, uint256 c, uint256 l, uint256 p) public pure {
         Waterfall.State memory s = _st(0, d, c, 0, 0);
-        vm.assume(p <= 10_000 && l > 0 && l <= c);
+        vm.assume(p <= 10_000 && l > 0 && l < c);
         Waterfall.Holders memory who = Waterfall.Holders(false, true, true);
         (Waterfall.State memory a,) = Waterfall.split(s, d + c - l, who, p);
         (Waterfall.State memory b,) = Waterfall.split(a, d + c, who, p);

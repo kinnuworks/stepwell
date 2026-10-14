@@ -21,8 +21,8 @@ jobs:
       - run: arc-forge test -vv
       - run: FORK=1 arc-forge test --match-contract Fork --isolate -vv
       - name: Symbolic proofs
-        timeout-minutes: 40
+        timeout-minutes: 15
         run: |
-          python3 -m pip install --quiet halmos
+          python3 -m venv $RUNNER_TEMP/halmos && $RUNNER_TEMP/halmos/bin/pip install --quiet halmos
           ln -sf $HOME/bin/arc-forge $HOME/bin/forge
-          halmos --contract WaterfallProofs
+          $RUNNER_TEMP/halmos/bin/halmos --contract WaterfallProofs --solver-timeout-assertion 300000

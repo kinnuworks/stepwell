@@ -69,14 +69,14 @@ No owner, no admin key, no upgrade path.
 cd contracts
 arc-forge test                                              # 33 tests
 FORK=1 arc-forge test --match-contract Fork --isolate -vv   # 3 tests against Arc mainnet state
-halmos --contract WaterfallProofs                           # 4 proofs for every input
+halmos --contract WaterfallProofs                           # 4 proofs, about 16 seconds
 ```
 
 - 27 unit, fuzz and regression tests, including one for each attack an earlier review found.
 - 5 stateful invariants, each 128 random campaigns of 64 calls with no test-side booking, against a separately written model of the rules. The model caught a real bug in an earlier version (a memory struct aliased inside the waterfall), now fixed.
 - A reachability test that walks 6,000 random steps and fails unless it reaches: cover wiped out, cover pierced, a loss absorbed, recovery refilling cover, a notice claimed, a deposit settled, a request cancelled, an exit in kind, a request refused at the floor and the cover layer restarting.
 - Fork tests on Arc mainnet state: request, settle and redeem against Steakhouse Prime USDC; a 2% bad-debt markdown in its real Morpho adapter, booked entirely by cover; and the one-signature deposit through Multicall3From and Memo.
-- Four properties of the waterfall proved for every input with Halmos: a loss within the cover never touches covered deposits; the buckets always add up to what the vault holds; interest never makes any bucket poorer; a loss followed by the same amount coming back restores both layers exactly.
+- Four properties of the waterfall proved with Halmos for every amount up to 2^64 units (about 18 trillion USDC): a loss within the cover never touches covered deposits; the buckets always add up to what the vault holds; interest never makes any bucket poorer; a loss smaller than the cover, followed by the same amount coming back, restores both layers exactly. They run in about 16 seconds.
 
 `THREATS.md` lists every threat and the test or proof that covers it.
 
