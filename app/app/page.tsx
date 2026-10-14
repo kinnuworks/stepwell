@@ -13,7 +13,7 @@ export default function Home() {
     <>
       <nav className="nav">
         <div className="nav__bar">
-          <a className="nav__brand" href="#top"><img className="app-icon" src="/icon.svg" alt="" />Stepwell</a>
+          <a className="nav__brand" href="#top"><img className="app-icon" src="/mark.png" alt="" />Stepwell</a>
           <div className="nav__links">
             <a href="#how">How it works</a>
             <a href="#try">Try it</a>
@@ -321,9 +321,24 @@ c.lossAbsorbed  `}<span className="c">// losses cover has already taken</span>{`
           </div>
         </section>
 
-        <section className="section section--alt">
+        <section className="section" id="name">
+          <div className="container split">
+            <figure className="photo">
+              <img src="/chand-baori.webp" alt="A deep stepwell in Rajasthan, flights of stone steps leading down to green water" loading="lazy" width={1600} height={1067} />
+              <figcaption>Generated image, after Chand Baori in Rajasthan.</figcaption>
+            </figure>
+            <div>
+              <div className="eyebrow">Why the name</div>
+              <h2>Built for the dry season.</h2>
+              <p className="lead">Stepwells were dug across western India to keep water through the months without rain. As the level fell, people walked further down the steps, and the deepest water lasted longest.</p>
+              <p className="lead">This works the same way. Cover sits at the top and goes first when a vault loses money. Depositors keep the deep water.</p>
+            </div>
+          </div>
+        </section>
+
+        <section className="section section--alt final">
           <div className="container" style={{ textAlign: "center" }}>
-            <img src="/icon.svg" alt="" style={{ width: 88, height: 88, margin: "0 auto 24px", borderRadius: 20, boxShadow: "var(--shadow-2)" }} />
+            <img src="/mark.png" alt="" style={{ width: 88, height: 88, margin: "0 auto 24px", borderRadius: 20, boxShadow: "var(--shadow-2)" }} />
             <h2>Keep the deep water. <span className="t-muted">Let someone else hold the surface.</span></h2>
             <div className="cta-row">
               <a className="btn btn-candy btn-lg" href="#deposit">Deposit with cover</a>
@@ -335,7 +350,7 @@ c.lossAbsorbed  `}<span className="c">// losses cover has already taken</span>{`
 
       <footer className="footer">
         <div className="container">
-          <span style={{ display: "flex", alignItems: "center", gap: 10 }}><img className="app-icon" src="/icon.svg" alt="" />Stepwell, built on Arc</span>
+          <span style={{ display: "flex", alignItems: "center", gap: 10 }}><img className="app-icon" src="/mark.png" alt="" />Stepwell, built on Arc</span>
           <span style={{ display: "flex", gap: 18 }}>
             <a href={REPO_URL}>Code</a>
             <a href={explorer("address", ADDR.factory)}>Contracts</a>

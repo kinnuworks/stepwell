@@ -78,3 +78,9 @@
 @media (max-width: 640px) { .hide-sm { display: none; } }
 
 .hero--split h1 { font-size: clamp(42px, 5vw, 66px); }
+
+/* the photo and the final band */
+.photo { margin: 0; }
+.photo img { width: 100%; height: auto; aspect-ratio: 3 / 2; object-fit: cover; border-radius: var(--r-xl); box-shadow: var(--shadow-2); }
+.photo figcaption { margin-top: 10px; font-size: var(--fs-micro); color: var(--ink-4); }
+.final { background: url(/paper-steps.webp) center bottom / cover no-repeat, var(--bg-alt); padding-bottom: clamp(140px, 16vw, 220px); }
