@@ -118,6 +118,7 @@ export function Rehearsal() {
           <button className="btn btn-outline" disabled={busy || !state} onClick={() => go("rain")}>Put the money back</button>
         </div>
         <p className={"status" + (msg?.err ? " err" : "")} aria-live="polite">{msg?.text}</p>
+        {runs.length === 0 && state && <LastLoss s={state} />}
         {runs.length > 0 && (
           <div className="receipt-list">
             {runs.map((r) => (
@@ -140,6 +141,22 @@ export function Rehearsal() {
           ) : <div style={{ padding: 40 }} className="t-small">Reading the rehearsal well…</div>}
         </div>
       </div>
+    </div>
+  );
+}
+
+/** Shows the most recent loss on the rehearsal well, so a visitor who arrives during the
+ *  one-minute cooldown still sees what cover did. */
+function LastLoss({ s }: { s: WellState }) {
+  const i = s.revisions.findIndex((r) => r.kind === 7);
+  if (i < 0) return null;
+  const loss = s.revisions[i];
+  const before = s.revisions[i + 1];
+  const fromCover = before ? Math.max(0, before.cover - loss.cover) : 0;
+  return (
+    <div className="receipt" style={{ marginTop: 12 }}>
+      <span>Last loss, block {loss.block.toString()}</span>
+      <span>{money(loss.amount)} lost, {money(fromCover)} from cover</span>
     </div>
   );
 }

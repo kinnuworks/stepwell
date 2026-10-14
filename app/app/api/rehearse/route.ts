@@ -46,7 +46,8 @@ export async function POST(req: Request) {
       hash = await wallet.writeContract({ address: ADDR.rehearsalVault, abi: rehearsalAbi, functionName: "refill", args: [amount] });
     } else {
       const last = await publicClient.readContract({ address: ADDR.rehearsalVault, abi: rehearsalAbi, functionName: "lastLossAt" });
-      const wait = Number(last) + 60 - Math.floor(Date.now() / 1000);
+      const now = (await publicClient.getBlock()).timestamp; // chain time, not this server's clock
+      const wait = Number(last) + 60 - Number(now);
       if (wait > 0) throw new Error(`The test vault can only lose money once a minute. Try again in ${wait} seconds.`);
       hash = await wallet.writeContract({ address: ADDR.rehearsalVault, abi: rehearsalAbi, functionName: "lose", args: [800n] });
     }
