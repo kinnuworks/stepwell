@@ -48,7 +48,7 @@ Covered shares are ERC-4626 on the way out (withdraw, redeem, previews). Deposit
 
 ## For apps, concretely
 
-- `sdk/stepwell.ts`: `coverageFor(client, factory, vault)` and `coveredDepositCalls(...)`, which returns the approve-and-deposit calls for one signature through Multicall3From, with your app's reference attached through Memo. Depends only on viem.
+- `sdk/stepwell.ts`: `coverageFor(client, factory, vault)`, which counts only Stepwells on standard terms unless you ask for all; `coveredDepositCalls(...)`, which returns the approve-and-request calls for one signature through Multicall3From, with your app's reference attached through Memo; and `settleCall(...)` for the day after. Depends only on viem.
 - `/embed?ref=your-app`: a cover card any app can put next to a vault in an iframe.
 - `/vaults`: every Morpho vault on Arc, its deposits, rate and instant cash, and whether it has cover. Anyone can open a Stepwell on a vault that has none.
 
