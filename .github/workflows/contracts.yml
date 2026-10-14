@@ -20,3 +20,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
       - run: arc-forge test -vv
       - run: FORK=1 arc-forge test --match-contract Fork -vv
+      - name: Symbolic proofs
+        run: |
+          python3 -m pip install --quiet halmos
+          ln -sf $HOME/bin/arc-forge $HOME/bin/forge
+          halmos --contract WaterfallProofs

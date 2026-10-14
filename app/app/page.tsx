@@ -2,6 +2,8 @@ import { HeroWell, Rehearsal, Books, DepositPanel, LiveStats } from "@/component
 import Reveal from "@/components/Reveal";
 import { ADDR, REPO_URL, REAL_VAULT_NAME, explorer } from "@/lib/config";
 
+const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://stepwell.vercel.app";
+
 const Icon = ({ d }: { d: string }) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={d} /></svg>
 );
@@ -16,6 +18,7 @@ export default function Home() {
             <a href="#how">How it works</a>
             <a href="#try">Try it</a>
             <a href="#apps">For apps</a>
+            <a href="/vaults">Vaults</a>
             <a href="#proof">Proof</a>
           </div>
           <a className="btn btn-ink btn-sm" href="#deposit">Deposit</a>
@@ -183,6 +186,7 @@ export default function Home() {
                   <span className="chip">Anyone can open a Stepwell on any vault</span>
                 </div>
               </div>
+              <div>
               <div className="window window--dark">
                 <div className="window__bar"><div className="lights"><i /><i /><i /></div><span className="window__title">your-app.ts</span></div>
                 <pre className="code">{`// `}<span className="c">covered deposit for a user, in one signature</span>{`
@@ -198,7 +202,12 @@ export default function Home() {
 `}<span className="k">const</span>{` [c] = `}<span className="k">await</span>{` factory.read.coverageFor([vault]);
 c.coverBps      `}<span className="c">// 1500 = 15% of the well is cover</span>{`
 c.premiumBps    `}<span className="c">// 2500 = 25% of interest passed up</span>{`
-c.lossAbsorbed  `}<span className="c">// losses cover has already taken</span></pre>
+c.lossAbsorbed  `}<span className="c">// losses cover has already taken</span>{`
+
+// `}<span className="c">or just show the cover card next to your vault</span>{`
+<iframe src="${SITE}/embed?ref=your-app" />`}</pre>
+              </div>
+              <p className="t-small" style={{ marginTop: 12 }}><a href="/vaults" style={{ textDecoration: "underline" }}>See every Morpho vault on Arc and its cover →</a></p>
               </div>
             </div>
           </div>
@@ -232,7 +241,7 @@ c.lossAbsorbed  `}<span className="c">// losses cover has already taken</span></
               <div className="eyebrow">Proof</div>
               <h2>Check our work. <span className="t-muted">Then check it again.</span></h2>
             </div>
-            <div className="grid grid-3">
+            <div className="grid grid-3" style={{ gridAutoRows: "1fr" }}>
               {[
                 ["M9 12l2 2 4-4M5 4h14v16H5z", "Tested against a second model", "A deliberately plain model of the waterfall runs beside the contract through thousands of random deposits, exits, gains and losses. They have to agree to the unit."],
                 ["M12 3v18M3 12h18", "Every end state reached", "A test walks 4,000 random steps and fails unless it saw cover wiped out, cover pierced, a notice claimed, an exit in kind, a deposit refused and a restart from empty."],
@@ -240,6 +249,7 @@ c.lossAbsorbed  `}<span className="c">// losses cover has already taken</span></
                 ["M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z", "No owner, no upgrades", "Every parameter is fixed when a Stepwell is created. There is no admin key, no pause and no way to change the code."],
                 ["M3 12h4l3-8 4 16 3-8h4", "Run against the real vault", `A fork test deposits into ${REAL_VAULT_NAME} on Arc mainnet state and gets the money back out.`],
                 ["M4 4h16v12H4zM8 20h8", "Arc-native", "USDC is the gas and the asset. Multicall3From makes approve and deposit one signature. Arc's Memo contract tags deposits by app."],
+                ["M5 12h14M12 5l7 7-7 7", "Proved, not sampled", "The loss rule is one pure function, and four of its properties are proved for every possible input with symbolic execution: losses within cover never touch depositors, the books always balance."],
               ].map(([d, t, p], i) => (
                 <Reveal key={t} i={i}>
                   <div className="tile">

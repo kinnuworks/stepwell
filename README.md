@@ -40,6 +40,12 @@ Morpho vaults on Arc held about 170 million dollars on 11 October 2026 (Morpho A
 
 The covered share is an ERC-4626 vault, so code that already deposits into a Morpho vault can deposit into a Stepwell unchanged. `StepwellFactory.coverageFor(vault)` returns, for any vault address, how much cover it has, what it costs, and how much loss it has already absorbed. Anyone can open a Stepwell on any vault with `StepwellFactory.create`.
 
+## For apps, concretely
+
+- `sdk/stepwell.ts`: `coverageFor(client, factory, vault)` and `coveredDepositCalls(...)`, which returns the approve-and-deposit calls for one signature through Multicall3From, with your app's reference attached through Memo. Depends only on viem.
+- `/embed?ref=your-app`: a cover card any app can put next to a vault in an iframe.
+- `/vaults`: every Morpho vault on Arc, its deposits, rate and instant cash, and whether it has cover. Anyone can open a Stepwell on a vault that has none.
+
 ## Contracts
 
 | Contract | Arc mainnet |
@@ -63,6 +69,12 @@ FORK=1 arc-forge test --match-contract Fork -vv  # against the real vault on Arc
 - 5 stateful invariants, each run as 128 random campaigns of 64 calls, against an independent model of the waterfall.
 - A reachability test that walks 4,000 random steps and fails unless it saw: cover wiped out, cover pierced, a loss absorbed, a notice claimed, an exit in kind, a deposit refused at the floor and the cover layer restarting.
 - A fork test that deposits into Steakhouse Prime USDC on Arc mainnet state and withdraws again.
+
+- Four properties of the loss rule proved for every input with Halmos (symbolic execution, not sampling): a loss within the cover never touches depositors; a bigger loss empties the cover first; the two layers always add up to what the vault holds; interest never makes either layer poorer. The rule lives in `src/Waterfall.sol` as one pure function so it can be proved on its own.
+
+```bash
+halmos --contract WaterfallProofs   # 4 proofs, under 2 seconds
+```
 
 See `THREATS.md` for every threat and the test that covers it. Tests use Circle's Arc Foundry build (`arc-forge`).
 

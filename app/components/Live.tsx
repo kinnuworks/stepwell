@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { createWalletClient, custom, encodeFunctionData, parseUnits, type Address } from "viem";
+import { createWalletClient, custom, encodeFunctionData, keccak256, parseUnits, toHex, type Address } from "viem";
 import WellDrawing from "./WellDrawing";
 import { readWell, KIND_LABEL, publicClient, type WellState } from "@/lib/chain";
 import { ADDR, arc, explorer, REAL_VAULT_NAME } from "@/lib/config";
@@ -180,10 +180,18 @@ export function Books() {
 
 type Eth = { request: (a: { method: string; params?: unknown[] }) => Promise<unknown> };
 const ERC20_APPROVE = [{ type: "function", name: "approve", stateMutability: "nonpayable", inputs: [{ type: "address" }, { type: "uint256" }], outputs: [{ type: "bool" }] }] as const;
+const MEMO = [{ type: "function", name: "memo", stateMutability: "nonpayable", inputs: [{ name: "target", type: "address" }, { name: "data", type: "bytes" }, { name: "memoId", type: "bytes32" }, { name: "memoData", type: "bytes" }], outputs: [] }] as const;
 const M3F = [{ type: "function", name: "aggregate3", stateMutability: "payable", inputs: [{ type: "tuple[]", components: [{ name: "target", type: "address" }, { name: "allowFailure", type: "bool" }, { name: "callData", type: "bytes" }] }], outputs: [{ type: "tuple[]", components: [{ name: "success", type: "bool" }, { name: "returnData", type: "bytes" }] }] }] as const;
 
 /** Deposit with cover, or underwrite: one signature through Arc's Multicall3From. */
-export function DepositPanel() {
+/** Deposits are routed through Arc's Memo contract so the app that sent them is on the record.
+ *  Memo calls the Stepwell through Arc's CallFrom precompile, so the depositor is still the sender. */
+export function DepositPanel({ appRef: fixedRef }: { appRef?: string }) {
+  const [appRef, setAppRef] = useState(fixedRef ?? "stepwell.site");
+  useEffect(() => {
+    const r = new URLSearchParams(window.location.search).get("ref");
+    if (!fixedRef && r) setAppRef(r.slice(0, 64));
+  }, [fixedRef]);
   const [mode, setMode] = useState<"deposit" | "cover">("deposit");
   const [amount, setAmount] = useState("1.00");
   const [account, setAccount] = useState<Address | null>(null);
@@ -208,12 +216,12 @@ export function DepositPanel() {
       const call = mode === "deposit"
         ? encodeFunctionData({ abi: stepwellAbi, functionName: "deposit", args: [value, account] })
         : encodeFunctionData({ abi: stepwellAbi, functionName: "depositCover", args: [value, account] });
-      setMsg({ text: "Confirm in your wallet. Approval and deposit go in one signature." });
+      setMsg({ text: "Confirm in your wallet. Approval and deposit go in one signature, tagged with this app's memo." });
       const hash = await wallet.writeContract({
         address: ADDR.multicall3From, abi: M3F, functionName: "aggregate3",
         args: [[
           { target: ADDR.usdc, allowFailure: false, callData: encodeFunctionData({ abi: ERC20_APPROVE, functionName: "approve", args: [ADDR.real, value] }) },
-          { target: ADDR.real, allowFailure: false, callData: call },
+          { target: ADDR.memo, allowFailure: false, callData: encodeFunctionData({ abi: MEMO, functionName: "memo", args: [ADDR.real, call, keccak256(toHex(appRef)), toHex(appRef)] }) },
         ]],
       });
       const t0 = Date.now();

@@ -10,3 +10,4 @@ app/node_modules/
 research-and-plan.md
 design/
 .claude/
+.operator-wallet.json

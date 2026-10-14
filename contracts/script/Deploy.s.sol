@@ -42,6 +42,9 @@ contract Deploy is Script {
         steak.depositCover(0.75e6, me);
         steak.deposit(steak.maxDeposit(me) < 4e6 ? steak.maxDeposit(me) : 4e6, me);
 
+        // gas money for the rehearsal relayer
+        USDC.transfer(operator, 1e6);
+
         vm.stopBroadcast();
         console2.log("factory   ", address(factory));
         console2.log("rehearsal ", address(rehearsal));

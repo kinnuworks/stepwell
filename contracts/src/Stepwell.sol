@@ -9,6 +9,7 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {CoverToken} from "./CoverToken.sol";
+import {Waterfall} from "./Waterfall.sol";
 
 /// @title Stepwell
 /// @notice First-loss cover for one ERC-4626 vault. Everything deposited here goes into that
@@ -160,33 +161,10 @@ contract Stepwell is ERC20, IERC4626, ReentrancyGuard {
     function _split(uint256 deep, uint256 coverAmt, uint256 h, bool coverHolders, bool deepHolders)
         internal
         view
-        returns (uint256 newDeep, uint256 newCover, uint256 gain, uint256 loss, uint256 premium)
+        returns (uint256, uint256, uint256, uint256, uint256)
     {
-        uint256 booked = deep + coverAmt;
-        newDeep = deep;
-        newCover = coverAmt;
-        if (h > booked) {
-            gain = h - booked;
-            if (!deepHolders && !coverHolders) return (deep, coverAmt, 0, 0, 0);
-            if (!deepHolders || booked == 0) {
-                newCover += gain;
-            } else if (!coverHolders) {
-                newDeep += gain;
-            } else {
-                uint256 deepGross = gain.mulDiv(deep, booked);
-                premium = deepGross.mulDiv(premiumBpsAt(deep, coverAmt), BPS);
-                newDeep += deepGross - premium;
-                newCover += gain - (deepGross - premium);
-            }
-        } else if (h < booked) {
-            loss = booked - h;
-            if (loss <= coverAmt) {
-                newCover -= loss;
-            } else {
-                newDeep -= loss - coverAmt;
-                newCover = 0;
-            }
-        }
+        uint256 premiumBps = premiumBpsAt(deep, coverAmt);
+        return Waterfall.split(deep, coverAmt, h, coverHolders, deepHolders, premiumBps);
     }
 
     /// @notice Books interest or loss into the two layers. Anyone may call it.

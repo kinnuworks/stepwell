@@ -1,0 +1,21 @@
+// Local check: approve + depositCover through Memo, batched by Multicall3From, on the Arc fork.
+import { createWalletClient, createPublicClient, http, encodeFunctionData, keccak256, toHex, parseAbi } from "viem";
+import { privateKeyToAccount } from "viem/accounts";
+const rpc = "http://localhost:8547";
+const chain = { id: 5042, name: "Arc", nativeCurrency: { name: "USDC", symbol: "USDC", decimals: 18 }, rpcUrls: { default: { http: [rpc] } } };
+const account = privateKeyToAccount("0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d");
+const pub = createPublicClient({ chain, transport: http(rpc) });
+const wal = createWalletClient({ account, chain, transport: http(rpc) });
+const USDC = "0x3600000000000000000000000000000000000000", M3F = "0x522fAf9A91c41c443c66765030741e4AaCe147D0", MEMO = "0x5294E9927c3306DcBaDb03fe70b92e01cCede505";
+const DRILL = process.env.DRILL;
+const value = 100000n;
+const sw = parseAbi(["function depositCover(uint256,address) returns (uint256)", "function cover() view returns (address)"]);
+const call = encodeFunctionData({ abi: sw, functionName: "depositCover", args: [value, account.address] });
+const memoData = encodeFunctionData({ abi: parseAbi(["function memo(address,bytes,bytes32,bytes)"]), functionName: "memo", args: [DRILL, call, keccak256(toHex("stepwell.site")), toHex("stepwell.site")] });
+const approve = encodeFunctionData({ abi: parseAbi(["function approve(address,uint256) returns (bool)"]), functionName: "approve", args: [DRILL, value] });
+const cover = await pub.readContract({ address: DRILL, abi: sw, functionName: "cover" });
+const bal = (a) => pub.readContract({ address: cover, abi: parseAbi(["function balanceOf(address) view returns (uint256)"]), functionName: "balanceOf", args: [a] });
+const before = await bal(account.address);
+const hash = await wal.writeContract({ address: M3F, abi: parseAbi(["function aggregate3((address target,bool allowFailure,bytes callData)[]) payable returns ((bool success,bytes returnData)[])"]), functionName: "aggregate3", args: [[{ target: USDC, allowFailure: false, callData: approve }, { target: MEMO, allowFailure: false, callData: memoData }]] });
+const r = await pub.waitForTransactionReceipt({ hash });
+console.log("status", r.status, "logs", r.logs.length, "cover shares gained by the wallet itself:", (await bal(account.address)) - before);
