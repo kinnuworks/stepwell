@@ -49,6 +49,11 @@ export function HeroWell() {
         <>
           <WellDrawing covered={state.covered} cover={state.cover} scaleTotal={total} />
           <Readout s={state} />
+          {state.settling > 0 && state.covered < 0.01 && (
+            <p className="window__note">
+              This well opened on 15 October 2026. Its first deposit, {money(state.settling)}, is in its one-day warm-up, so it is not covered yet and covered deposits read $0.00 until it settles.
+            </p>
+          )}
           <div className="window__foot">
             <span>Read from {NET}, block {state.block.toString()}</span>
             <a href={explorer("address", ADDR.real)} target="_blank" rel="noreferrer">contract</a>

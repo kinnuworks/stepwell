@@ -1,3 +1,4 @@
+import {Img, staticFile} from 'remotion';
 // Long-form ending: mark + name, one line whose last word rolls through options and lands
 // ("in 2024 / in 2023 / … → anytime"), then the URL button gets clicked. Works in every look.
 import React from 'react';
@@ -12,7 +13,7 @@ import {Roll} from '../components/Extras';
 import {Cursor} from '../components/UI';
 import {withAlpha} from '../lib/scene';
 
-export const Outro: React.FC<{name: string; markSvg?: string; line: string; roll?: string[]; url: string; cta?: string; look?: 'soft' | 'neon' | 'flat'}> = ({name, markSvg, line, roll = [], url, cta, look}) => {
+export const Outro: React.FC<{name: string; markSvg?: string; line: string; roll?: string[]; url: string; cta?: string; look?: 'soft' | 'neon' | 'flat'; qr?: string; qrLabel?: string}> = ({name, markSvg, line, roll = [], url, cta, look, qr, qrLabel}) => {
   const {f, ev, brand, tone, dur} = useScene();
   const {fps} = useVideoConfig();
   const L = useLayout();
@@ -77,6 +78,12 @@ export const Outro: React.FC<{name: string; markSvg?: string; line: string; roll
         <span style={{opacity: cta ? 0.75 : 1, fontWeight: cta ? 500 : 650}}>{url}</span>
         <span style={{fontSize: 26}}>→</span>
       </div>
+      {qr ? (
+        <div style={{position: 'absolute', right: L.w * 0.055, top: pillY - 300, width: 220, opacity: pill, transform: `translateY(${(1 - pill) * 18}px)`, textAlign: 'center', color: ink}}>
+          <Img src={staticFile(qr)} style={{width: 220, height: 220, borderRadius: 18, boxShadow: `0 0 0 1px ${withAlpha(ink, 0.1)}`}} />
+          {qrLabel ? <div style={{marginTop: 12, fontSize: 22, fontWeight: 600, opacity: 0.7}}>{qrLabel}</div> : null}
+        </div>
+      ) : null}
       <Cursor
         f={f}
         path={[

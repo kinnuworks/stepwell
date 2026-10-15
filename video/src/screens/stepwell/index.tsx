@@ -9,7 +9,7 @@ import {Cursor, Check} from '../../components/UI';
 export const C = {
   bg: '#FAF6EF', surface: '#FFFEFC', ink: '#17150F', ink2: '#423C33', muted: '#6D6459', faint: '#857B6E',
   line: '#EBE3D7', line2: '#DDD2C2', well: '#1E5B4F', water: '#7FB3A2', stone: '#E9DCC4', red: '#A1411F',
-  wash: '#E3ECE4', sunk: '#F3ECE1', code: '#1B1916',
+  wash: '#E3ECE4', sunk: '#F3ECE1', code: '#1B1916', darkInk: '#F3ECE1',
 };
 const D = 'Plus Jakarta Sans', M = 'Geist Mono', S = 'Eczar';
 
@@ -72,14 +72,18 @@ const A190 = areaBelow(190); // the drawing's scale: `scale` dollars fill the we
 const levelFor = (dollars: number, scale: number) => { const per = A190 / scale; let lo = G + 2, hi = FLOOR; for (let i = 0; i < 26; i++) { const m = (lo + hi) / 2; if (areaBelow(m) > dollars * per) lo = m; else hi = m; } return (lo + hi) / 2; };
 
 /** The section drawing. keys: [[at, covered, cover], ...] eased between. lw 1100 × lh 680. */
-export const SwWell: React.FC<ScreenProps & {keys: Array<[string | number, number, number]>; labels?: boolean; scale?: number}> = (p) => {
+export const SwWell: React.FC<ScreenProps & {keys: Array<[string | number, number, number]>; labels?: boolean; scale?: number; callout?: [At, At, string, string]}> = (p) => {
   const sc = p.scale ?? 1000;
   const ks = p.keys.map(([a, s, j]) => [atF(p, a), s, j] as [number, number, number]);
   const dur = ms(p.fps, 1100);
-  let s = ks[0][1], j = ks[0][2];
+  let s = ks[0][1], j = ks[0][2], drain = 0, rain = 0;
   for (let i = 1; i < ks.length; i++) {
     const t = tween(p.f, ks[i][0], ks[i][0] + dur, 0, 1, EASE.move);
     if (t > 0) { s = ks[i - 1][1] + (ks[i][1] - ks[i - 1][1]) * t; j = ks[i - 1][2] + (ks[i][2] - ks[i - 1][2]) * t; }
+    const win = tween(p.f, ks[i][0] - ms(p.fps, 150), ks[i][0] + dur + ms(p.fps, 500), 0, 1, EASE.linear);
+    const bell = win > 0 && win < 1 ? Math.sin(Math.PI * win) : 0;
+    if (ks[i][2] < ks[i - 1][2]) drain = Math.max(drain, bell);
+    if (ks[i][2] > ks[i - 1][2]) rain = Math.max(rain, bell);
   }
   const yS = levelFor(s, sc), yT = levelFor(s + j, sc);
   let wave = '';
@@ -100,6 +104,11 @@ export const SwWell: React.FC<ScreenProps & {keys: Array<[string | number, numbe
         <polygon points={PIT} fill={C.surface} />
         <polygon points={band(yS, FLOOR)} fill={C.well} />
         {hasJ && <polygon points={band(yT, yS)} fill={C.water} />}
+        {hasJ && drain > 0 && <polygon points={band(yT, yS)} fill="#C2542A" opacity={0.75 * drain} />}
+        {rain > 0 && Array.from({length: 16}, (_, k) => {
+          const x = SHAFT_X - 150 + ((k * 53) % 300), ph = ((p.f * 9 + k * 41) % 170);
+          return <line key={k} x1={x} x2={x - 3} y1={G - 70 + ph} y2={G - 56 + ph} stroke={C.well} strokeWidth="2" strokeLinecap="round" opacity={rain * (ph < 150 ? 0.7 : 0)} />;
+        })}
         {hasJ && <line x1={leftAt(yS)} x2={WALL} y1={yS} y2={yS} stroke="#fff" strokeWidth="1.2" strokeDasharray="7 5" opacity="0.85" />}
         <path d={wave} fill="none" stroke={C.ink} strokeWidth="1.3" />
         <g fill="none" stroke={C.ink} strokeLinejoin="round" strokeLinecap="round">
@@ -108,6 +117,19 @@ export const SwWell: React.FC<ScreenProps & {keys: Array<[string | number, numbe
           <path d={`M${SHAFT_X + 24} ${G - 44}H${WALL + 54}M${SHAFT_X + 18} ${G - 50}H${WALL + 60}M${SHAFT_X + 42} ${G - 50}v-7h${WALL - SHAFT_X - 6}v7`} strokeWidth="1.5" />
           <path d={`M${(SHAFT_X + WALL) / 2 + 2} ${G - 57}q26 -24 52 0`} strokeWidth="1.5" />
         </g>
+        {p.callout && (() => {
+          const [ca, cu, l1, l2] = p.callout;
+          const o = Math.min(tween(p.f, atF(p, ca), atF(p, ca) + ms(p.fps, 400), 0, 1, EASE.premium), tween(p.f, atF(p, cu) - ms(p.fps, 250), atF(p, cu), 1, 0, EASE.exit));
+          if (o <= 0 || !hasJ) return null;
+          const ym = (yT + yS) / 2;
+          return (
+            <g opacity={o}>
+              <path d={`M${WALL + 8} ${yT + 1}h10V${yS - 1}h-10`} stroke={C.red} strokeWidth="2" fill="none" />
+              <text style={{font: `700 15px ${D}`, fill: C.red}} x={WALL + 26} y={ym - 3}>{l1}</text>
+              <text style={{font: `700 15px ${D}`, fill: C.red}} x={WALL + 26} y={ym + 15}>{l2}</text>
+            </g>
+          );
+        })()}
         {p.labels !== false && (
           <g>
             <text style={lbl} x="238" y="122">First-loss cover</text>
@@ -303,13 +325,56 @@ export const SwLive: React.FC<ScreenProps & {click?: At}> = (p) => {
         <div style={{marginTop: 16, fontSize: 52, fontWeight: 750, letterSpacing: '-0.04em'}}>Go on, break it.</div>
         <div style={{marginTop: 14, fontSize: 23, lineHeight: 1.5, color: C.ink2}}>The button makes a small test vault send 8% of its money away, exactly how bad debt looks from outside.</div>
         <div style={{marginTop: 30, display: 'inline-flex', height: 64, padding: '0 30px', alignItems: 'center', borderRadius: 32, background: C.well, color: '#fff', fontSize: 23, fontWeight: 700, transform: `scale(${pressed && p.f < click + 6 ? 0.96 : 1})`}}>Simulate an 8% vault loss</div>
-        <div style={{marginTop: 26, padding: '14px 18px', borderRadius: 12, background: C.sunk, fontFamily: M, fontSize: 17, whiteSpace: 'nowrap', color: C.ink2, display: 'flex', justifyContent: 'space-between', gap: 12, opacity: res}}>
-          <span>Loss settled on Arc</span><span>$0.60 lost · $0.60 from cover</span>
+        <div style={{marginTop: 26, padding: '14px 18px', borderRadius: 12, background: C.sunk, fontFamily: M, fontSize: 21, lineHeight: 1.5, color: C.ink2, opacity: res}}>
+          <div><b style={{color: C.ink}}>$0.25 lost · $0.25 from cover</b></div><div>tx 0x684d7d…a76f42 · final in 4.63 s</div>
         </div>
-        <Cursor f={p.f} path={[[click - ms(p.fps, 1000), 520, 620], [click, 240, 438]]} clicks={[click]} showFrom={click - ms(p.fps, 1000)} size={34} />
+        <div style={{position: 'absolute', right: 26, top: 26, padding: '8px 14px', borderRadius: 99, background: C.well, color: '#fff', fontSize: 16, fontWeight: 700, opacity: res, transform: `scale(${0.85 + 0.15 * res})`}}>Real run · Arc mainnet</div>
+        <Cursor f={p.f} path={[[click - ms(p.fps, 1000), 520, 620], [click, 240, 372], [click + ms(p.fps, 700), 560, 640]]} clicks={[click]} showFrom={click - ms(p.fps, 1000)} size={34} />
       </div>
       <div style={{flex: 1, borderRadius: 30, overflow: 'hidden', boxShadow: `0 0 0 1px ${C.line}, 0 30px 70px -26px rgba(23,16,14,0.3)`}}>
-        <SwWell {...p} scale={7.5} keys={[[0, 6, 1.5], [click / (p.b(1) - p.b(0)) + 1, 6, 0.9]]} />
+        <SwWell {...p} scale={3.3} keys={[[0, 2.5, 0.62], [click / (p.b(1) - p.b(0)) + 1, 2.5, 0.37]]} />
+      </div>
+    </div>
+  );
+};
+
+import VAULTS from './vaults.json';
+
+/** Morpho vaults on Arc over $10k, as blocks sized by deposits (Morpho API). lw 1500 × lh 760. */
+export const SwVaults: React.FC<ScreenProps & {count?: At; mark?: At}> = (p) => {
+  const vs = VAULTS as Array<[string, string, number, number]>;
+  const total = vs.reduce((a, v) => a + v[2], 0);
+  const c0 = atF(p, p.count, 0.5), mk = atF(p, p.mark, 8);
+  const shown = tween(p.f, c0, c0 + ms(p.fps, 1600), 0, total / 1e6, EASE.enter);
+  const big = vs.slice(0, 2), rest = vs.slice(2), restSum = rest.reduce((a, v) => a + v[2], 0);
+  const tones = [C.well, '#2F7B69', C.water];
+  const blocks: Array<[string, number, string, number]> = [[big[0][0], big[0][2], tones[0], 0], [big[1][0], big[1][2], tones[1], 1], [`${rest.length} more`, restSum, tones[2], 2]];
+  const W0 = 860, H0 = 600;
+  const steak = rest.find((v) => v[0].startsWith('Steakhouse'));
+  const mo = tween(p.f, mk, mk + ms(p.fps, 500), 0, 1, EASE.premium);
+  return (
+    <div style={{width: '100%', height: '100%', display: 'flex', gap: 60, alignItems: 'center', fontFamily: D, color: C.darkInk ?? '#F3ECE1'}}>
+      <div style={{width: 520}}>
+        <div style={{fontSize: 124, fontWeight: 750, letterSpacing: '-0.05em', lineHeight: 1, color: '#F3ECE1', fontVariantNumeric: 'tabular-nums'}}>${shown.toFixed(1)}M</div>
+        <div style={{marginTop: 18, fontSize: 32, fontWeight: 600, color: '#F3ECE1', ...fadeUp(p.f, c0 + ms(p.fps, 1200), p.fps, 10)}}>in Morpho vaults on Arc</div>
+        <div style={{marginTop: 10, fontSize: 22, color: 'rgba(243,236,225,0.6)', fontFamily: M, ...fadeUp(p.f, c0 + ms(p.fps, 1500), p.fps, 10)}}>{vs.length} vaults over $10k · Morpho API</div>
+      </div>
+      <div style={{position: 'relative', width: W0, height: H0, display: 'flex', gap: 8, alignItems: 'flex-end'}}>
+        {blocks.map(([name, v, col, i]) => {
+          const g = tween(p.f, c0 + ms(p.fps, 220 * i), c0 + ms(p.fps, 220 * i + 900), 0, 1, EASE.premium);
+          const w = Math.max(70, (W0 - 16) * (v / total));
+          return (
+            <div key={name} style={{width: w, height: H0, background: col, borderRadius: 18, transformOrigin: 'bottom', transform: `scaleY(${g})`, padding: i < 2 ? '24px 26px' : 0, color: '#fff', boxSizing: 'border-box', overflow: 'hidden'}}>
+              {i < 2 ? <><div style={{fontSize: 26, fontWeight: 700}}>{name}</div><div style={{fontSize: 22, opacity: 0.8, marginTop: 6, fontFamily: M}}>${(v / 1e6).toFixed(1)}M</div></> : null}
+            </div>
+          );
+        })}
+        {steak ? (
+          <div style={{position: 'absolute', right: -6, bottom: -92, width: 520, textAlign: 'right', opacity: mo, transform: `translateY(${(1 - mo) * 12}px)`}}>
+            <div style={{fontSize: 28, fontWeight: 700, color: '#F3ECE1'}}>{steak[0]} · ${(steak[2] / 1e6).toFixed(1)}M</div>
+            <div style={{fontSize: 23, color: C.water, marginTop: 6}}>↑ where Stepwell's real well sits</div>
+          </div>
+        ) : null}
       </div>
     </div>
   );
@@ -317,4 +382,4 @@ export const SwLive: React.FC<ScreenProps & {click?: At}> = (p) => {
 
 export const MARK_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96"><rect width="96" height="96" rx="22" fill="#FAF6EF"/><path d="M16 26h12v8h8v8h8v8h8v10" fill="none" stroke="#17150F" stroke-width="6" stroke-linejoin="miter"/><path d="M28 26v48h48V26h10" fill="none" stroke="#17150F" stroke-width="6"/><rect x="31" y="60" width="42" height="11" fill="#1E5B4F"/><rect x="55" y="51" width="18" height="9" fill="#7FB3A2"/></svg>';
 
-export const SCREENS_STEPWELL = {SwSavings, SwWell, SwQuote, SwSplit, SwTable, SwGuards, SwSign, SwFork, SwTests, SwLive};
+export const SCREENS_STEPWELL = {SwVaults, SwSavings, SwWell, SwQuote, SwSplit, SwTable, SwGuards, SwSign, SwFork, SwTests, SwLive};

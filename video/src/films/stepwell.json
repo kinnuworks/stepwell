@@ -58,7 +58,7 @@
       "screen": "SwSavings",
       "chrome": "card",
       "x": 0,
-      "y": 50,
+      "y": 60,
       "z": 0,
       "w": 1240,
       "h": 772,
@@ -74,51 +74,46 @@
     "shots": [
      {
       "at": 0,
-      "zoom": 0.96
+      "zoom": 1.6,
+      "x": -60,
+      "y": 30
      },
      {
-      "at": 1,
-      "zoom": 1.02,
-      "ms": 7000,
-      "ease": "sine"
-     },
-     {
-      "at": 18.6,
-      "zoom": 1.16,
-      "y": 70,
-      "ms": 800,
+      "at": 0.6,
+      "zoom": 1.0,
+      "x": 0,
+      "y": 60,
+      "ms": 2600,
       "ease": "premium"
      },
      {
-      "at": 22,
-      "zoom": 1.0,
-      "y": 50,
-      "ms": 2600,
+      "at": 6,
+      "zoom": 1.05,
+      "ms": 6000,
+      "ease": "sine"
+     },
+     {
+      "at": 18.7,
+      "zoom": 1.3,
+      "x": -110,
+      "y": 30,
+      "ms": 450,
+      "ease": "enter"
+     },
+     {
+      "at": 21,
+      "zoom": 1.08,
+      "x": 0,
+      "y": 60,
+      "ms": 2200,
       "ease": "camera"
      }
     ],
-    "captions": [
+    "captions": [],
+    "blooms": [
      {
-      "at": -1,
-      "until": 13.2,
-      "text": "A vault on Arc pays *3.1%*.",
-      "pos": [
-       0.5,
-       0.09
-      ],
-      "size": 44,
-      "weight": 650
-     },
-     {
-      "at": 14.2,
-      "until": 28.6,
-      "text": "Then it books *bad debt*.",
-      "pos": [
-       0.5,
-       0.09
-      ],
-      "size": 44,
-      "weight": 650
+      "at": 19,
+      "color": "#C2542A"
      }
     ]
    },
@@ -126,31 +121,80 @@
     {
      "at": 19,
      "sfx": "drop",
-     "gain": 0
+     "gain": 2
+    },
+    {
+     "at": 18.6,
+     "sfx": "riser",
+     "beats": 0.4
     }
    ]
   },
   {
    "id": "scale",
-   "type": "Stat",
+   "type": "Journey",
    "beats": 17,
-   "in": "zoom",
+   "in": "whip",
    "music": "build",
-   "tone": "dark",
    "props": {
-    "value": 170,
-    "from": 0,
-    "prefix": "$",
-    "suffix": "M",
-    "label": "in Morpho vaults on Arc.",
-    "sub": "Nothing on Arc pays any of it back."
-   }
+    "look": "soft",
+    "panels": [
+     {
+      "id": "vw",
+      "screen": "SwVaults",
+      "chrome": "none",
+      "x": 0,
+      "y": 70,
+      "z": 0,
+      "w": 1560,
+      "h": 790,
+      "lw": 1500,
+      "lh": 760,
+      "radius": 30,
+      "enter": "rise",
+      "props": {
+       "count": 0.6,
+       "mark": 10.5
+      }
+     }
+    ],
+    "shots": [
+     {
+      "at": 0,
+      "zoom": 0.94
+     },
+     {
+      "at": 0.5,
+      "zoom": 1.02,
+      "ms": 8000,
+      "ease": "sine"
+     }
+    ],
+    "captions": []
+   },
+   "tone": "dark",
+   "addCues": [
+    {
+     "at": 0.6,
+     "sfx": "count",
+     "beats": 3
+    },
+    {
+     "at": 3.8,
+     "sfx": "hit",
+     "gain": -2
+    },
+    {
+     "at": 10.5,
+     "sfx": "tick"
+    }
+   ]
   },
   {
    "id": "ask",
    "type": "Journey",
    "beats": 15,
-   "in": "blur",
+   "in": "push",
    "music": "build",
    "props": {
     "look": "soft",
@@ -160,7 +204,7 @@
       "screen": "SwQuote",
       "chrome": "card",
       "x": 0,
-      "y": 50,
+      "y": 60,
       "z": 0,
       "w": 1500,
       "h": 520,
@@ -177,23 +221,46 @@
     "shots": [
      {
       "at": 0,
-      "zoom": 0.98
+      "zoom": 1.12,
+      "x": -60
      },
      {
-      "at": 0.5,
-      "zoom": 1.05,
-      "ms": 7000,
+      "at": 0.3,
+      "zoom": 1.0,
+      "x": 0,
+      "ms": 1400,
+      "ease": "premium"
+     },
+     {
+      "at": 3.5,
+      "zoom": 1.06,
+      "ms": 5500,
       "ease": "sine"
      }
     ],
     "captions": []
-   }
+   },
+   "addCues": [
+    {
+     "at": 5.8,
+     "sfx": "swish",
+     "gain": -4
+    },
+    {
+     "at": 10.2,
+     "sfx": "swish",
+     "gain": -4
+    }
+   ]
   },
   {
    "id": "reveal",
    "type": "Reveal",
    "beats": 5,
-   "in": "iris",
+   "in": {
+    "type": "flood",
+    "color": "#1E5B4F"
+   },
    "music": "build",
    "props": {
     "name": "Stepwell",
@@ -205,7 +272,7 @@
    "id": "mechanism",
    "type": "Journey",
    "beats": 51,
-   "in": "blur",
+   "in": "zoom",
    "music": "full",
    "props": {
     "look": "soft",
@@ -215,7 +282,7 @@
       "screen": "SwWell",
       "chrome": "card",
       "x": -520,
-      "y": 50,
+      "y": 70,
       "z": 0,
       "w": 1060,
       "h": 655,
@@ -240,6 +307,12 @@
          850,
          150
         ]
+       ],
+       "callout": [
+        27.5,
+        38.5,
+        "takes the",
+        "first loss"
        ]
       }
      },
@@ -248,14 +321,14 @@
       "screen": "SwSplit",
       "chrome": "card",
       "x": 520,
-      "y": 50,
+      "y": 70,
       "z": 0,
       "w": 920,
       "h": 435,
       "lw": 1100,
       "lh": 520,
       "radius": 30,
-      "enter": "rise",
+      "enter": "pop",
       "props": {
        "split": 15.6
       },
@@ -267,105 +340,79 @@
       "screen": "SwTable",
       "chrome": "card",
       "x": 520,
-      "y": 50,
+      "y": 70,
       "z": 0,
       "w": 880,
       "h": 493,
       "lw": 1000,
       "lh": 560,
       "radius": 30,
-      "enter": "rise",
+      "enter": "pop",
       "props": {
        "loss": 26.5,
        "back": 41
       },
-      "from": 23.2
+      "from": 33.6
      }
     ],
     "shots": [
      {
       "at": 0,
       "focus": "well",
-      "zoom": 1.3
+      "zoom": 2.0,
+      "y": -40
      },
      {
-      "at": 0.5,
-      "zoom": 1.36,
+      "at": 0.3,
+      "focus": "well",
+      "zoom": 1.32,
+      "ms": 2200,
+      "ease": "premium"
+     },
+     {
+      "at": 5,
+      "zoom": 1.38,
       "ms": 5000,
       "ease": "sine"
      },
      {
       "at": 11.6,
       "x": -45,
-      "y": 50,
+      "y": 70,
       "zoom": 0.84,
       "ms": 1200,
       "ease": "camera"
      },
      {
       "at": 24,
-      "zoom": 0.86,
-      "ms": 6000,
-      "ease": "sine"
+      "x": -380,
+      "y": 40,
+      "zoom": 1.12,
+      "ms": 1300,
+      "ease": "camera"
      },
      {
-      "at": 39,
-      "zoom": 0.87,
+      "at": 34,
+      "x": -45,
+      "y": 70,
+      "zoom": 0.86,
+      "ms": 1300,
+      "ease": "camera"
+     },
+     {
+      "at": 38,
+      "zoom": 0.88,
       "ms": 5000,
       "ease": "sine"
      }
     ],
-    "captions": [
-     {
-      "at": 0.6,
-      "until": 11.3,
-      "text": "Cover sits *on top*.",
-      "pos": [
-       0.5,
-       0.09
-      ],
-      "size": 44,
-      "weight": 650
-     },
-     {
-      "at": 12.5,
-      "until": 22.8,
-      "text": "Paid from *interest*.",
-      "pos": [
-       0.5,
-       0.09
-      ],
-      "size": 44,
-      "weight": 650
-     },
-     {
-      "at": 23.6,
-      "until": 38.6,
-      "text": "Cover takes the *first* loss.",
-      "pos": [
-       0.5,
-       0.09
-      ],
-      "size": 44,
-      "weight": 650
-     },
-     {
-      "at": 39.6,
-      "until": 50.2,
-      "text": "Refills depositors *first*.",
-      "pos": [
-       0.5,
-       0.09
-      ],
-      "size": 44,
-      "weight": 650
-     }
-    ]
+    "captions": []
    },
    "addCues": [
     {
      "at": 26.5,
-     "sfx": "drop"
+     "sfx": "drop",
+     "gain": 1
     },
     {
      "at": 41,
@@ -374,6 +421,14 @@
     {
      "at": 15.6,
      "sfx": "swish"
+    },
+    {
+     "at": 11.8,
+     "sfx": "pop"
+    },
+    {
+     "at": 23.2,
+     "sfx": "pop"
     }
    ]
   },
@@ -381,7 +436,7 @@
    "id": "guards",
    "type": "Journey",
    "beats": 20,
-   "in": "blur",
+   "in": "push",
    "music": "full",
    "props": {
     "look": "soft",
@@ -391,7 +446,7 @@
       "screen": "SwGuards",
       "chrome": "none",
       "x": 0,
-      "y": 60,
+      "y": 70,
       "z": 0,
       "w": 1480,
       "h": 592,
@@ -408,28 +463,32 @@
     "shots": [
      {
       "at": 0,
-      "zoom": 1.0
+      "zoom": 1.08,
+      "x": -240
      },
      {
-      "at": 0.5,
-      "zoom": 1.04,
-      "ms": 9000,
-      "ease": "sine"
+      "at": 0.6,
+      "zoom": 1.0,
+      "x": 0,
+      "ms": 1200,
+      "ease": "premium"
+     },
+     {
+      "at": 8.8,
+      "zoom": 1.1,
+      "x": 240,
+      "ms": 1100,
+      "ease": "camera"
+     },
+     {
+      "at": 16,
+      "zoom": 1.0,
+      "x": 0,
+      "ms": 1400,
+      "ease": "camera"
      }
     ],
-    "captions": [
-     {
-      "at": 0.6,
-      "until": 19.2,
-      "text": "Built to be hard to *game*.",
-      "pos": [
-       0.5,
-       0.09
-      ],
-      "size": 44,
-      "weight": 650
-     }
-    ]
+    "captions": []
    },
    "addCues": [
     {
@@ -447,7 +506,10 @@
    "id": "sign",
    "type": "Journey",
    "beats": 15,
-   "in": "blur",
+   "in": {
+    "type": "wipe",
+    "dir": "up"
+   },
    "music": "full",
    "props": {
     "look": "soft",
@@ -457,7 +519,7 @@
       "screen": "SwSign",
       "chrome": "none",
       "x": 0,
-      "y": 60,
+      "y": 70,
       "z": 0,
       "w": 1500,
       "h": 726,
@@ -474,28 +536,25 @@
     "shots": [
      {
       "at": 0,
-      "zoom": 1.0
+      "zoom": 1.15,
+      "x": -330
      },
      {
       "at": 0.5,
-      "zoom": 1.03,
-      "ms": 6500,
-      "ease": "sine"
+      "zoom": 1.08,
+      "x": -300,
+      "ms": 1000,
+      "ease": "premium"
+     },
+     {
+      "at": 7.6,
+      "zoom": 1.0,
+      "x": 0,
+      "ms": 1200,
+      "ease": "camera"
      }
     ],
-    "captions": [
-     {
-      "at": 0.6,
-      "until": 14.2,
-      "text": "One signature. *One read.*",
-      "pos": [
-       0.5,
-       0.09
-      ],
-      "size": 44,
-      "weight": 650
-     }
-    ]
+    "captions": []
    },
    "addCues": [
     {
@@ -513,7 +572,7 @@
    "id": "fork",
    "type": "Journey",
    "beats": 15,
-   "in": "blur",
+   "in": "iris",
    "music": "full",
    "props": {
     "look": "soft",
@@ -523,7 +582,7 @@
       "screen": "SwFork",
       "chrome": "none",
       "x": 0,
-      "y": 60,
+      "y": 70,
       "z": 0,
       "w": 1460,
       "h": 635,
@@ -539,30 +598,24 @@
     "shots": [
      {
       "at": 0,
-      "zoom": 0.98
+      "zoom": 0.96
      },
      {
       "at": 0.5,
-      "zoom": 1.05,
+      "zoom": 1.06,
       "ms": 6500,
       "ease": "sine"
      }
     ],
-    "captions": [
-     {
-      "at": 0.6,
-      "until": 14.2,
-      "text": "Real bad debt, *real vault*.",
-      "pos": [
-       0.5,
-       0.09
-      ],
-      "size": 44,
-      "weight": 650
-     }
-    ]
+    "captions": []
    },
+   "tone": "dark",
    "addCues": [
+    {
+     "at": 2,
+     "sfx": "type",
+     "beats": 1.5
+    },
     {
      "at": 4,
      "sfx": "chime"
@@ -573,7 +626,7 @@
    "id": "tests",
    "type": "Journey",
    "beats": 11,
-   "in": "blur",
+   "in": "push",
    "music": "full",
    "props": {
     "look": "soft",
@@ -583,7 +636,7 @@
       "screen": "SwTests",
       "chrome": "card",
       "x": 0,
-      "y": 60,
+      "y": 70,
       "z": 0,
       "w": 1500,
       "h": 600,
@@ -599,34 +652,30 @@
     "shots": [
      {
       "at": 0,
-      "zoom": 1.0
+      "zoom": 1.2,
+      "x": -300,
+      "y": 0
      },
      {
       "at": 0.5,
-      "zoom": 1.04,
-      "ms": 4800,
-      "ease": "sine"
+      "zoom": 1.0,
+      "x": 0,
+      "y": 70,
+      "ms": 2600,
+      "ease": "camera"
      }
     ],
-    "captions": [
-     {
-      "at": 0.6,
-      "until": 10.2,
-      "text": "35 tests. 4 proofs. *Every push.*",
-      "pos": [
-       0.5,
-       0.09
-      ],
-      "size": 44,
-      "weight": 650
-     }
-    ]
+    "captions": []
    },
    "addCues": [
     {
      "at": 1,
      "sfx": "count",
      "beats": 4
+    },
+    {
+     "at": 5.2,
+     "sfx": "chime"
     }
    ]
   },
@@ -634,7 +683,7 @@
    "id": "live",
    "type": "Journey",
    "beats": 12,
-   "in": "blur",
+   "in": "zoom",
    "music": "full",
    "props": {
     "look": "soft",
@@ -644,7 +693,7 @@
       "screen": "SwLive",
       "chrome": "none",
       "x": 0,
-      "y": 60,
+      "y": 70,
       "z": 0,
       "w": 1500,
       "h": 750,
@@ -660,28 +709,25 @@
     "shots": [
      {
       "at": 0,
-      "zoom": 1.0
+      "zoom": 1.12,
+      "x": -280
      },
      {
-      "at": 0.5,
-      "zoom": 1.03,
-      "ms": 5200,
-      "ease": "sine"
+      "at": 0.4,
+      "zoom": 1.06,
+      "x": -250,
+      "ms": 1000,
+      "ease": "premium"
+     },
+     {
+      "at": 5.2,
+      "zoom": 1.0,
+      "x": 0,
+      "ms": 1200,
+      "ease": "camera"
      }
     ],
-    "captions": [
-     {
-      "at": 0.6,
-      "until": 11.4,
-      "text": "It's *live*. Press one button.",
-      "pos": [
-       0.5,
-       0.09
-      ],
-      "size": 44,
-      "weight": 650
-     }
-    ]
+    "captions": []
    },
    "addCues": [
     {
@@ -698,15 +744,393 @@
    "id": "outro",
    "type": "Outro",
    "beats": 10,
-   "in": "blur",
+   "in": {
+    "type": "flood",
+    "color": "#1E5B4F"
+   },
    "music": "out",
    "props": {
     "name": "Stepwell",
     "markSvg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"96\" height=\"96\" viewBox=\"0 0 96 96\"><rect width=\"96\" height=\"96\" rx=\"22\" fill=\"#FAF6EF\"/><path d=\"M16 26h12v8h8v8h8v8h8v10\" fill=\"none\" stroke=\"#17150F\" stroke-width=\"6\" stroke-linejoin=\"miter\"/><path d=\"M28 26v48h48V26h10\" fill=\"none\" stroke=\"#17150F\" stroke-width=\"6\"/><rect x=\"31\" y=\"60\" width=\"42\" height=\"11\" fill=\"#1E5B4F\"/><rect x=\"55\" y=\"51\" width=\"18\" height=\"9\" fill=\"#7FB3A2\"/></svg>",
-    "line": "Keep the deep water.",
+    "line": "First-loss cover for Morpho vaults on Arc.",
     "url": "stepwell-one.vercel.app",
-    "look": "soft"
+    "look": "soft",
+    "qr": "qr.svg",
+    "qrLabel": "Try it on your phone"
    }
+  }
+ ],
+ "captionTrack": [
+  {
+   "tokens": [
+    {
+     "text": "It",
+     "t": 3.831
+    },
+    {
+     "text": "pays",
+     "t": 4.044
+    },
+    {
+     "text": "about",
+     "t": 4.842
+    },
+    {
+     "text": "3%",
+     "t": 5.216
+    }
+   ],
+   "end": 7.023
+  },
+  {
+   "tokens": [
+    {
+     "text": "your",
+     "t": 11.055
+    },
+    {
+     "text": "1,000",
+     "t": 11.364
+    },
+    {
+     "text": "is",
+     "t": 11.878
+    },
+    {
+     "text": "now",
+     "t": 12.084
+    },
+    {
+     "text": "920",
+     "t": 12.342
+    }
+   ],
+   "end": 14.734
+  },
+  {
+   "tokens": [
+    {
+     "text": "nothing",
+     "t": 20.571
+    },
+    {
+     "text": "pays",
+     "t": 21.318
+    },
+    {
+     "text": "any",
+     "t": 21.621
+    },
+    {
+     "text": "of",
+     "t": 21.873
+    },
+    {
+     "text": "it",
+     "t": 22.193
+    },
+    {
+     "text": "back",
+     "t": 22.395
+    }
+   ],
+   "end": 23.755
+  },
+  {
+   "tokens": [
+    {
+     "text": "loss",
+     "t": 26.147
+    },
+    {
+     "text": "cover",
+     "t": 26.997
+    },
+    {
+     "text": "built",
+     "t": 27.379
+    },
+    {
+     "text": "into",
+     "t": 27.761
+    },
+    {
+     "text": "deposits",
+     "t": 28.089
+    }
+   ],
+   "end": 29.589
+  },
+  {
+   "tokens": [
+    {
+     "text": "This",
+     "t": 31.3
+    },
+    {
+     "text": "is",
+     "t": 31.659
+    },
+    {
+     "text": "Stepwell",
+     "t": 31.898
+    }
+   ],
+   "end": 33.456
+  },
+  {
+   "tokens": [
+    {
+     "text": "cover",
+     "t": 38.208
+    },
+    {
+     "text": "pays",
+     "t": 38.531
+    },
+    {
+     "text": "first",
+     "t": 38.807
+    }
+   ],
+   "end": 40.076
+  },
+  {
+   "tokens": [
+    {
+     "text": "Never",
+     "t": 43.254
+    },
+    {
+     "text": "out",
+     "t": 43.595
+    },
+    {
+     "text": "of",
+     "t": 43.839
+    },
+    {
+     "text": "pocket",
+     "t": 44.035
+    }
+   ],
+   "end": 45.374
+  },
+  {
+   "tokens": [
+    {
+     "text": "The",
+     "t": 50.04
+    },
+    {
+     "text": "cover",
+     "t": 50.801
+    },
+    {
+     "text": "layer",
+     "t": 51.109
+    },
+    {
+     "text": "takes",
+     "t": 51.417
+    },
+    {
+     "text": "all",
+     "t": 51.726
+    },
+    {
+     "text": "of",
+     "t": 52.09
+    },
+    {
+     "text": "it",
+     "t": 52.267
+    }
+   ],
+   "end": 53.387
+  },
+  {
+   "tokens": [
+    {
+     "text": "it",
+     "t": 55.127
+    },
+    {
+     "text": "refills",
+     "t": 55.325
+    },
+    {
+     "text": "depositors",
+     "t": 55.89
+    },
+    {
+     "text": "first",
+     "t": 56.482
+    }
+   ],
+   "end": 58.076
+  },
+  {
+   "tokens": [
+    {
+     "text": "still",
+     "t": 66.649
+    },
+    {
+     "text": "carry",
+     "t": 66.965
+    },
+    {
+     "text": "losses",
+     "t": 67.281
+    },
+    {
+     "text": "while",
+     "t": 67.643
+    },
+    {
+     "text": "they",
+     "t": 67.959
+    },
+    {
+     "text": "wait",
+     "t": 68.231
+    }
+   ],
+   "end": 69.447
+  },
+  {
+   "tokens": [
+    {
+     "text": "a",
+     "t": 69.785
+    },
+    {
+     "text": "covered",
+     "t": 69.931
+    },
+    {
+     "text": "deposit",
+     "t": 70.74
+    },
+    {
+     "text": "is",
+     "t": 71.177
+    },
+    {
+     "text": "one",
+     "t": 71.371
+    },
+    {
+     "text": "signature",
+     "t": 71.614
+    }
+   ],
+   "end": 73.096
+  },
+  {
+   "tokens": [
+    {
+     "text": "Cover",
+     "t": 81.524
+    },
+    {
+     "text": "took",
+     "t": 82.36
+    },
+    {
+     "text": "all",
+     "t": 82.639
+    },
+    {
+     "text": "of",
+     "t": 82.994
+    },
+    {
+     "text": "it",
+     "t": 83.179
+    }
+   ],
+   "end": 84.15
+  },
+  {
+   "tokens": [
+    {
+     "text": "35",
+     "t": 84.3
+    },
+    {
+     "text": "tests",
+     "t": 85.177
+    },
+    {
+     "text": "and",
+     "t": 85.582
+    },
+    {
+     "text": "4",
+     "t": 85.872
+    },
+    {
+     "text": "symbolic",
+     "t": 86.219
+    },
+    {
+     "text": "proofs",
+     "t": 86.91
+    }
+   ],
+   "end": 88.273
+  },
+  {
+   "tokens": [
+    {
+     "text": "watch",
+     "t": 92.478
+    },
+    {
+     "text": "cover",
+     "t": 92.838
+    },
+    {
+     "text": "take",
+     "t": 93.198
+    },
+    {
+     "text": "a",
+     "t": 93.507
+    },
+    {
+     "text": "real",
+     "t": 93.661
+    },
+    {
+     "text": "loss",
+     "t": 93.97
+    }
+   ],
+   "end": 95.23
+  },
+  {
+   "tokens": [
+    {
+     "text": "Keep",
+     "t": 96.946
+    },
+    {
+     "text": "the",
+     "t": 97.761
+    },
+    {
+     "text": "deep",
+     "t": 98.026
+    },
+    {
+     "text": "water",
+     "t": 98.345
+    }
+   ],
+   "end": 99.67
   }
  ]
 }
