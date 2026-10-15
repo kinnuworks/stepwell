@@ -32,8 +32,15 @@ contract Deploy is Script {
             rehearsal, "Stepwell rehearsal", "swDRILL",
             Stepwell.Params(1500, 1000, 2000, 3500, 1500, 10 minutes, 1 days, 60), code
         );
+        // On mainnet this is Steakhouse Prime USDC. Arc testnet has no Morpho vaults, so a testnet
+        // run puts the standard-terms well on a second test vault instead.
+        IERC4626 real = address(STEAKHOUSE).code.length > 0
+            ? STEAKHOUSE
+            : IERC4626(address(new RehearsalVault(USDC, operator, operator)));
         Stepwell steak = factory.create(
-            STEAKHOUSE, "Stepwell on Steakhouse Prime USDC", "swSTEAK", factory.standardParams(), code
+            real,
+            address(real) == address(STEAKHOUSE) ? "Stepwell on Steakhouse Prime USDC" : "Stepwell on a test vault",
+            "swSTEAK", factory.standardParams(), code
         );
 
         // seeds out of 13.25 USDC: drill 1.5 cover + 6 deposit, Steakhouse 0.75 + 4, operator gas 1
@@ -60,5 +67,6 @@ contract Deploy is Script {
         console2.log("rehearsal ", address(rehearsal));
         console2.log("drill     ", address(drill));
         console2.log("steakhouse", address(steak));
+        console2.log("realvault ", address(real));
     }
 }

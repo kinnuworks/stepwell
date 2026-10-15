@@ -7,7 +7,7 @@ export const arc = defineChain({
   name: "Arc",
   nativeCurrency: { name: "USDC", symbol: "USDC", decimals: 18 },
   rpcUrls: { default: { http: [RPC_URL] } },
-  blockExplorers: { default: { name: "Arc explorer", url: "https://explorer.arc.io" } },
+  blockExplorers: { default: { name: "Arc explorer", url: process.env.NEXT_PUBLIC_EXPLORER ?? "https://explorer.arc.io" } },
 });
 
 const a = (v: string | undefined) => (v ?? "0x0000000000000000000000000000000000000000") as Address;
@@ -25,5 +25,6 @@ export const ADDR = {
 
 export const REAL_VAULT_NAME = "Steakhouse Prime USDC";
 export const REPO_URL = process.env.NEXT_PUBLIC_REPO_URL ?? "https://github.com/";
-export const explorer = (kind: "tx" | "address", v: string) => `https://explorer.arc.io/${kind}/${v}`;
+export const TESTNET = arc.id !== 5042;
+export const explorer = (kind: "tx" | "address", v: string) => `${arc.blockExplorers.default.url}/${kind}/${v}`;
 export const sourcify = (addr: string) => `https://repo.sourcify.dev/${arc.id}/${addr}`;

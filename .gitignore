@@ -3,7 +3,7 @@
 !.env.example
 contracts/out/
 contracts/cache/
-contracts/broadcast/*/31337/
+contracts/broadcast/
 app/.next/
 app/node_modules/
 .DS_Store
@@ -11,3 +11,5 @@ research-and-plan.md
 design/
 .claude/
 .operator-wallet.json
+.testnet-wallet.json
+app/.vercel/

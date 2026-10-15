@@ -1,6 +1,6 @@
 import { HeroWell, Rehearsal, Books, DepositPanel, LiveStats, StakeBadge } from "@/components/Live";
 import Reveal from "@/components/Reveal";
-import { ADDR, REPO_URL, REAL_VAULT_NAME, explorer } from "@/lib/config";
+import { ADDR, REPO_URL, REAL_VAULT_NAME, TESTNET, explorer } from "@/lib/config";
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://stepwell.vercel.app";
 
@@ -25,6 +25,11 @@ export default function Home() {
         </div>
       </nav>
 
+      {TESTNET && (
+        <p className="testnet-note" role="note">
+          Testnet preview. Arc testnet has no Morpho vaults, so the {REAL_VAULT_NAME} well here sits on a test vault. The mainnet deploy is on its way.
+        </p>
+      )}
       <main id="top">
         <section className="hero hero--split">
           <div className="container">
