@@ -4,7 +4,9 @@ First-loss cover for USDC in Morpho vaults on Arc.
 
 When a vault loses money, underwriters take the loss before depositors do. Depositors pay for that with a slice of their interest, never out of pocket. Any wallet or app can add it, because a covered deposit is a standard ERC-4626 vault.
 
-Live site: https://stepwell-one.vercel.app · For reviewers: `/reviewers`
+[Live on Arc mainnet](https://stepwell-one.vercel.app) · [For reviewers](https://stepwell-one.vercel.app/reviewers) · [Factory on Sourcify](https://repo.sourcify.dev/5042/0xbD4FBE3B8759Efe6b87552F31B2776dF9c41158c) · [CI](https://github.com/kinnuworks/stepwell/actions) · Demo film: [link]
+
+**Proof in one line:** on a fork of Arc mainnet, a 2% bad-debt markdown in the real Steakhouse Prime USDC vault cost cover 4.0 USDC and covered depositors 0.0 USDC. On mainnet itself, [this transaction](https://explorer.arc.io/tx/0x684d7d9a702675c0a8fa299e7fff7d8e3afce2f388ee7f3c90e78e1b6fa76f42) marked the rehearsal vault down 8%: cover took all $0.25, covered deposits stayed at $2.50, final 4.6 seconds after the button was pressed.
 
 ## Why it exists
 
@@ -63,18 +65,22 @@ Covered shares are ERC-4626 on the way out (withdraw, redeem, previews). Deposit
 
 Deploying and seeding all of it cost about 0.28 USDC in gas.
 
+These run the code tagged [`v1.0-mainnet`](https://github.com/kinnuworks/stepwell/tree/v1.0-mainnet). Two issues found after the deploy are fixed in this repo and listed in [THREATS.md](THREATS.md#found-after-the-mainnet-deploy); the fixed code goes to mainnet in the next deploy.
+
+The Steakhouse well opened on 15 October 2026. Its first deposit is in the one-day warm-up until about 01:05 UTC on 16 October, so until then the well holds cover and a pending deposit but no settled covered deposits. The rehearsal well already has settled covered deposits.
+
 No owner, no admin key, no upgrade path.
 
 ## Tests
 
 ```bash
 cd contracts
-arc-forge test                                              # 33 tests
+arc-forge test                                              # 36 tests
 FORK=1 arc-forge test --match-contract Fork --isolate -vv   # 3 tests against Arc mainnet state
 halmos --contract WaterfallProofs                           # 4 proofs, about 16 seconds
 ```
 
-- 27 unit, fuzz and regression tests, including one for each attack an earlier review found.
+- 30 unit, fuzz and regression tests, including one for each attack found in two reviews.
 - 5 stateful invariants, each 128 random campaigns of 64 calls with no test-side booking, against a separately written model of the rules. The model caught a real bug in an earlier version (a memory struct aliased inside the waterfall), now fixed.
 - A reachability test that walks 6,000 random steps and fails unless it reaches: cover wiped out, cover pierced, a loss absorbed, recovery refilling cover, a notice claimed, a deposit settled, a request cancelled, an exit in kind, a request refused at the floor and the cover layer restarting.
 - Fork tests on Arc mainnet state: request, settle and redeem against Steakhouse Prime USDC; a 2% bad-debt markdown in its real Morpho adapter, booked entirely by cover; and the one-signature deposit through Multicall3From and Memo.

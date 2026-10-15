@@ -293,7 +293,7 @@ export const SwFork: React.FC<ScreenProps & {at?: At}> = (p) => {
 /** One tile per test, flipping green in a wave. lw 1300 × lh 560. */
 export const SwTests: React.FC<ScreenProps & {at?: At}> = (p) => {
   const a = atF(p, p.at, 0.5);
-  const groups: Array<[string, number]> = [['Unit and fuzz', 27], ['Invariants', 5], ['On Arc mainnet state', 3], ['Symbolic proofs', 4]];
+  const groups: Array<[string, number]> = [['Unit and fuzz', 30], ['Invariants and reachability', 6], ['On Arc mainnet state', 3], ['Symbolic proofs', 4]];
   let k = 0;
   return (
     <div style={{...box, padding: '46px 54px', display: 'flex', flexDirection: 'column', gap: 26}}>

@@ -286,6 +286,60 @@ contract StepwellTest is Test {
         assertGt(well.coverAssets(), 0, "what the leaver did not take stays with cover");
     }
 
+    /// Nobody can add to someone else's request, so nobody can restart their warm-up.
+    function test_cannotResetAnotherDepositorsWarmup() public {
+        vm.prank(under);
+        well.depositCover(150 * D, under);
+        _request(dep, 100 * D);
+        vm.warp(block.timestamp + 20 hours);
+        vm.prank(attacker);
+        vm.expectRevert(Stepwell.NotController.selector);
+        well.requestDeposit(1, dep, attacker);
+        vm.warp(block.timestamp + 4 hours);
+        well.settle(dep);
+        assertGt(well.balanceOf(dep), 0, "settled on time");
+    }
+
+    /// Two underwriters with 75 each and 850 of covered deposits.
+    function _seedTwo() internal {
+        vm.prank(under);
+        well.depositCover(75 * D, under);
+        vm.prank(dep2);
+        well.depositCover(75 * D, dep2);
+        _request(dep, 850 * D);
+        vm.warp(block.timestamp + 1 days);
+        well.settle(dep);
+    }
+
+    /// Cancelling a notice gives up what the noticed shares earned meanwhile, to the other underwriters.
+    function test_cancelledNoticeForfeitsItsGain() public {
+        _seedTwo();
+        uint256 shares = coverToken.balanceOf(under);
+        vm.prank(under);
+        well.giveNotice(shares);
+        uint256 cap = well.coverValueOf(shares);
+        vault.earn(100 * D);
+        vm.prank(under);
+        well.cancelNotice();
+        uint256 mine = well.coverValueOf(coverToken.balanceOf(under));
+        uint256 theirs = well.coverValueOf(coverToken.balanceOf(dep2));
+        assertApproxEqAbs(mine, cap, 2, "no interest kept from the notice period");
+        assertGt(theirs, mine, "the forfeited interest went to the other underwriter");
+    }
+
+    /// Renewing a notice also gives up the gain, so standing notice is not a free option.
+    function test_renewedNoticeForfeitsItsGain() public {
+        _seedTwo();
+        uint256 shares = coverToken.balanceOf(under);
+        vm.prank(under);
+        well.giveNotice(shares);
+        uint256 cap = well.coverValueOf(shares);
+        vault.earn(100 * D);
+        vm.prank(under);
+        well.giveNotice(shares); // renew on everything; capped at what is left after the forfeit
+        assertApproxEqAbs(well.coverValueOf(coverToken.balanceOf(under)), cap, 2, "renewal does not reset the cap upward");
+    }
+
     /// After a loss, recovering money refills the cover first (a high-water mark).
     function test_recoveryRefillsCoverFirst() public {
         _seed();

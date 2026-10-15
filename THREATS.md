@@ -17,6 +17,8 @@ Each threat names the test or proof that covers it. Tests live in `contracts/tes
 | The rule itself is wrong for some input | Four properties of the waterfall proved with Halmos for every amount up to 2^64 units | `check_lossWithinCoverSparesDepositors`, `check_booksBalance`, `check_gainNeverHurts`, `check_recoveryRestoresExactly` |
 | The vault is short of cash and people are trapped | Depositors and underwriters can both leave with the vault's own shares | `test_maxWithdrawRespectsVaultLiquidity`, `test_exitInKind`, `test_claimCoverInKind` |
 | Integrators call `withdraw(maxWithdraw())` and it reverts | `maxWithdraw` and `maxRedeem` take the vault's reported liquidity into account | `test_maxWithdrawRespectsVaultLiquidity` |
+| Someone tops up another person's deposit request with dust every day, so its one-day warm-up never ends and it is never covered | Only the depositor can add to their own request (`controller == owner == msg.sender`) | `test_cannotResetAnotherDepositorsWarmup` |
+| An underwriter cancels or renews a notice to get back the interest the noticed shares were meant to forfeit, keeping a standing exit option for free | Cancelling or renewing a notice burns the cover shares that hold what the noticed shares earned since notice day; that value stays with the other underwriters | `test_cancelledNoticeForfeitsItsGain`, `test_renewedNoticeForfeitsItsGain` |
 | Someone registers a Stepwell with useless terms and wallets show it as cover | The factory marks standard-terms Stepwells; `standardCoverageFor` returns only those, and the site reads only those | `test_registryOnlyVouchesForStandardTerms` |
 | Someone registers an impostor contract through the factory | The factory refuses creation code whose hash differs from the one fixed at deployment | by construction |
 | Losses in the real Morpho vault are not detected | Fork test on Arc mainnet state: the real Steakhouse Prime USDC adapter reports a 2% markdown, Vault V2 lowers its share price, and cover alone takes it | `test_fork_morphoBadDebtIsBookedAsLoss` |
@@ -39,3 +41,7 @@ Known limits that are not bugs:
 - Cover can leave. The floor only blocks new requests; the coverage figures show cover under notice.
 - The contract trusts the vault's `previewRedeem`. A malicious vault could fake a loss, which would hurt the underwriters who chose to cover that vault.
 - Unaudited.
+
+## Found after the mainnet deploy
+
+A blind review on 15 October 2026, after the contracts went live, found the two issues in the warm-up and notice rows above (the dust top-up and the notice renewal). Both are fixed in this repo with regression tests. **The contracts on Arc mainnet run the earlier code, tagged `v1.0-mainnet`, and still have both issues.** Neither can take anyone's money: the first can delay another person's cover, and the second lets an underwriter keep interest the rules say they give up. The fixed version goes to mainnet in the next deploy, alongside a migration of the seed amounts.

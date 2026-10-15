@@ -271,7 +271,9 @@ contract Stepwell is ERC20, IERC4626, ReentrancyGuard {
         returns (uint256 requestId)
     {
         if (assets == 0) revert ZeroAmount();
-        if (msg.sender != owner) revert NotController();
+        // only the depositor can add to their own request: otherwise anyone could top it up with
+        // dust and restart its warm-up forever
+        if (msg.sender != owner || controller != owner) revert NotController();
         _sync();
         uint256 limit = maxRequest();
         if (assets > limit) revert NotEnoughCover(limit);
@@ -518,7 +520,12 @@ contract Stepwell is ERC20, IERC4626, ReentrancyGuard {
         _sync(); // book first: a loss may have wiped the layer and voided these shares
         if (cover.balanceOf(msg.sender) < shares) revert InsufficientShares();
         Notice memory old = notices[msg.sender];
-        if (old.shares > 0 && old.epoch == cover.epoch()) noticedShares -= old.shares;
+        if (old.shares > 0 && old.epoch == cover.epoch()) {
+            noticedShares -= old.shares;
+            _forfeitNoticeGain(old);
+        }
+        if (shares > cover.balanceOf(msg.sender)) shares = cover.balanceOf(msg.sender); // after any forfeit
+        if (shares == 0) revert ZeroAmount();
         uint256 cap = shares.mulDiv(coverAssets + 1, cover.totalSupply() + _offset, Math.Rounding.Floor);
         uint256 readyAt = block.timestamp + noticeSeconds;
         notices[msg.sender] = Notice(uint128(shares), uint128(cap), uint64(readyAt), uint64(cover.epoch()));
@@ -529,9 +536,32 @@ contract Stepwell is ERC20, IERC4626, ReentrancyGuard {
 
     function cancelNotice() external {
         Notice memory n = notices[msg.sender];
-        if (n.shares > 0 && n.epoch == cover.epoch()) noticedShares -= n.shares;
+        _sync();
+        if (n.shares > 0 && n.epoch == cover.epoch()) {
+            noticedShares -= n.shares;
+            _forfeitNoticeGain(n);
+        }
         delete notices[msg.sender];
         emit NoticeCancelled(msg.sender);
+    }
+
+    /// Noticed shares stop earning however the notice ends. Cancelling or renewing a notice gives
+    /// up whatever the noticed shares gained since notice day: that many cover shares are burned
+    /// and their value stays with the rest of the cover layer.
+    function _forfeitNoticeGain(Notice memory n) internal {
+        uint256 ts = cover.totalSupply() + _offset;
+        uint256 a = coverAssets + 1;
+        uint256 value = uint256(n.shares).mulDiv(a, ts, Math.Rounding.Floor);
+        uint256 cap = n.valueAtNotice;
+        if (value <= cap || cap >= a) return; // nothing gained, or nobody else to give it to
+        // keep k of the noticed shares so that, after burning the rest, those k are worth `cap`:
+        // k * a / (ts - (shares - k)) = cap  =>  k = cap * (ts - shares) / (a - cap)
+        uint256 keep = cap.mulDiv(ts - n.shares, a - cap, Math.Rounding.Ceil);
+        if (keep >= n.shares) return;
+        uint256 burn = n.shares - keep;
+        uint256 bal = cover.balanceOf(msg.sender);
+        if (burn > bal) burn = bal;
+        if (burn > 0) cover.burn(msg.sender, burn);
     }
 
     /// @notice Leave the cover layer once notice has run, in USDC.

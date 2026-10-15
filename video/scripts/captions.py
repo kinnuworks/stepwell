@@ -5,21 +5,21 @@ when it is said, give or take a tenth of a second."""
 import json, re, subprocess, pathlib
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 
-EMPH = ["3%", "920", "nothing", "loss", "Stepwell", "first", "pocket", "all", "depositors", "losses", "one", "all", "35", "real", "deep"]
+EMPH = ["3%", "920", "170", "loss", "Stepwell", "first", "pocket", "all", "depositors", "game", "one", "real", "39", "real", "deep"]
 LINES = [  # (spoken line, exact phrase from it, digits shown for spoken numbers)
  ("You put a thousand dollars of USDC into a vault on Arc. It pays about three percent.", "It pays about three percent", {"three percent": "3%"}),
  ("Then a borrower defaults. The vault books bad debt, and your thousand is now nine hundred and twenty.", "your thousand is now nine hundred and twenty", {"thousand": "1,000", "nine hundred and twenty": "920"}),
- ("Morpho vaults on Arc hold about one hundred and seventy million dollars. Today, nothing pays any of it back.", "nothing pays any of it back", {}),
+ ("Morpho vaults on Arc hold about one hundred and seventy million dollars. Today, nothing pays any of it back.", "about one hundred and seventy million dollars", {"one hundred and seventy": "170"}),
  ("Arc asked builders for exactly this: loss cover built into deposits, paid for out of yield.", "loss cover built into deposits", {}),
  ("This is Stepwell.", "This is Stepwell", {}),
  ("Underwriters put up a cover layer. When the vault loses money, cover pays first.", "cover pays first", {}),
  ("Depositors pay for it with a slice of their interest. Never out of pocket.", "Never out of pocket", {}),
  ("The same eight percent loss. Covered deposits stay at eight hundred and fifty. The cover layer takes all of it.", "The cover layer takes all of it", {}),
  ("When the money comes back, it refills depositors first, then cover.", "it refills depositors first", {}),
- ("It's built to be hard to game. Deposits wait a day before they're covered. Underwriters give three days' notice, and still carry losses while they wait.", "still carry losses while they wait", {}),
+ ("It's built to be hard to game. Deposits wait a day before they're covered. Underwriters give three days' notice, and still carry losses while they wait.", "It's built to be hard to game", {}),
  ("On Arc, a covered deposit is one signature, and any app can read a vault's cover in one call.", "a covered deposit is one signature", {}),
- ("We pushed real bad debt through the Steakhouse vault, on a copy of Arc mainnet. Cover took all of it.", "Cover took all of it", {}),
- ("Thirty-five tests and four symbolic proofs run on every push.", "Thirty-five tests and four symbolic proofs", {"Thirty-five": "35", "four": "4"}),
+ ("We pushed real bad debt through the Steakhouse vault, on a copy of Arc mainnet. Cover took all of it.", "real bad debt through the Steakhouse vault", {}),
+ ("Thirty-nine tests and four symbolic proofs run on every push.", "Thirty-nine tests and four symbolic proofs", {"Thirty-nine": "39", "four": "4"}),
  ("It's live. Press one button, and watch cover take a real loss.", "watch cover take a real loss", {}),
  ("Stepwell. Keep the deep water.", "Keep the deep water", {}),
 ]
@@ -66,9 +66,21 @@ for i, (line, phrase, digits) in enumerate(LINES):
     assert any(o.get('em') for o in out), (i, EMPH[i])
     end = t0 + at_fraction(segs, cum[k0 + len(pw)]) + 0.9
     track.append({'tokens': out, 'end': round(end, 3)})
-# each caption holds until the next one takes its place: a quick fade, then the next one rises in
-for a, b in zip(track, track[1:]):
-    a['end'] = round(b['tokens'][0]['t'] - 0.12, 3)
-track[-1]['end'] = round(json.loads((ROOT / 'voice.json').read_text())[-1]['sec'] + 6, 3)
+# captions come first: each appears whole just before its line is read, and leaves before its
+# scene ends (or before the next caption), so it never sits over the next scene
+film = json.loads((ROOT / 'src/films/stepwell.json').read_text())
+bounds, t = [], 0.0
+for sc in film['scenes']:
+    d = sc['beats'] * 0.5; bounds.append((t, t + d)); t += d
+for i, c in enumerate(track):
+    line_t = voice[i]['sec']
+    s0, s1 = next((a, b) for a, b in bounds if a <= line_t < b)
+    start = max(s0 + 0.15, line_t - 0.35)
+    end = s1 - 0.2
+    if i + 1 < len(track):
+        end = min(end, max(start + 1.5, voice[i + 1]['sec'] - 0.45))
+    for k, tok in enumerate(c['tokens']):
+        tok['t'] = round(start + 0.045 * k, 3)
+    c['end'] = round(end, 3)
 (ROOT / 'captions.json').write_text(json.dumps(track, indent=1))
 for c in track: print(f"{c['tokens'][0]['t']:7.2f}–{c['end']:7.2f}  " + ' '.join(t['text'] for t in c['tokens']))
