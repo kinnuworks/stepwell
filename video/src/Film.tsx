@@ -7,7 +7,7 @@ import {Grain} from './components/Stage';
 import {SCENES} from './scenes/registry';
 import {CaptionTrack, Caption} from './components/CaptionTrack';
 
-export type FilmSpec = {meta: Record<string, unknown>; brand: Brand; scenes: Array<Record<string, unknown>>; grain?: number; captionTrack?: Caption[]};
+export type FilmSpec = {meta: Record<string, unknown>; brand: Brand; scenes: Array<Record<string, unknown>>; grain?: number; captionTrack?: Caption[]; captionDark?: Array<[number, number]>};
 
 /** Plays a film.json: each scene in its own Sequence (overlapping by the incoming transition). */
 export const Film: React.FC<{film: FilmSpec; debug?: boolean}> = ({film, debug}) => {
@@ -29,7 +29,7 @@ export const Film: React.FC<{film: FilmSpec; debug?: boolean}> = ({film, debug})
             </Sequence>
           );
         })}
-        {film.captionTrack ? <CaptionTrack track={film.captionTrack} font={(tl.brand as Brand).fontDisplay} ink={(tl.brand as Brand).ink} band={(tl.brand as Brand).bg} /> : null}
+        {film.captionTrack ? <CaptionTrack track={film.captionTrack} font={(tl.brand as Brand).fontDisplay} serif="Instrument Serif" ink={(tl.brand as Brand).ink} darkInk={(tl.brand as Brand).darkInk} dark={film.captionDark ?? []} /> : null}
         <Grain opacity={film.grain ?? 0.045} />
         {debug ? <DebugStamp scenes={tl.scenes as SceneInfo[]} fps={tl.meta.fps} fpb={tl.meta.framesPerBeat} /> : null}
       </AbsoluteFill>

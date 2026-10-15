@@ -5,6 +5,7 @@ when it is said, give or take a tenth of a second."""
 import json, re, subprocess, pathlib
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 
+EMPH = ["3%", "920", "nothing", "loss", "Stepwell", "first", "pocket", "all", "depositors", "losses", "one", "all", "35", "real", "deep"]
 LINES = [  # (spoken line, exact phrase from it, digits shown for spoken numbers)
  ("You put a thousand dollars of USDC into a vault on Arc. It pays about three percent.", "It pays about three percent", {"three percent": "3%"}),
  ("Then a borrower defaults. The vault books bad debt, and your thousand is now nine hundred and twenty.", "your thousand is now nine hundred and twenty", {"thousand": "1,000", "nine hundred and twenty": "920"}),
@@ -61,11 +62,13 @@ for i, (line, phrase, digits) in enumerate(LINES):
         else:
             toks.append((pw[k], k)); k += 1
     t0 = voice[i]['sec']
-    out = [{'text': s, 't': round(t0 + at_fraction(segs, cum[k0 + j]), 3)} for s, j in toks]
+    out = [{'text': s, 't': round(t0 + at_fraction(segs, cum[k0 + j]), 3), **({'em': True} if s == EMPH[i] else {})} for s, j in toks]
+    assert any(o.get('em') for o in out), (i, EMPH[i])
     end = t0 + at_fraction(segs, cum[k0 + len(pw)]) + 0.9
     track.append({'tokens': out, 'end': round(end, 3)})
-# one at a time: each caption is fully gone 0.15 s before the next begins
+# each caption holds until the next one takes its place: a quick fade, then the next one rises in
 for a, b in zip(track, track[1:]):
-    a['end'] = round(min(a['end'], b['tokens'][0]['t'] - 0.15), 3)
+    a['end'] = round(b['tokens'][0]['t'] - 0.12, 3)
+track[-1]['end'] = round(json.loads((ROOT / 'voice.json').read_text())[-1]['sec'] + 6, 3)
 (ROOT / 'captions.json').write_text(json.dumps(track, indent=1))
 for c in track: print(f"{c['tokens'][0]['t']:7.2f}–{c['end']:7.2f}  " + ' '.join(t['text'] for t in c['tokens']))

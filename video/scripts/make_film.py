@@ -4,6 +4,7 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 mark = re.search(r"MARK_SVG = '(.*?)';", (ROOT / 'src/screens/stepwell/index.tsx').read_text()).group(1)
 
 def card(id, screen, lw, lh, w, x=0, y=40, z=0, frm=None, to=None, props=None, enter='rise', chrome='card', radius=30):
+    w = round(w * 0.86)  # calm frames: cards float in plenty of space
     p = {'id': id, 'screen': screen, 'chrome': chrome, 'x': x, 'y': y, 'z': z, 'w': w, 'h': round(w * lh / lw), 'lw': lw, 'lh': lh, 'radius': radius, 'enter': enter, 'props': props or {}}
     if frm is not None: p['from'] = frm
     if to is not None: p['to'] = to
@@ -44,16 +45,16 @@ scenes = [
     [{'at': 0, 'zoom': 1.08, 'x': -240}, {'at': 0.6, 'zoom': 1.0, 'x': 0, 'ms': 1200, 'ease': 'premium'}, {'at': 8.8, 'zoom': 1.1, 'x': 240, 'ms': 1100, 'ease': 'camera'}, {'at': 16, 'zoom': 1.0, 'x': 0, 'ms': 1400, 'ease': 'camera'}],
     tin='push', cues=[{'at': 0.8, 'sfx': 'pop'}, {'at': 9.6, 'sfx': 'pop', 'pitch': 3}]),
   J('sign', 15, [card('s', 'SwSign', 1240, 600, 1500, y=70, chrome='none', props={'click': 4.4, 'code': 8.4})],
-    [{'at': 0, 'zoom': 1.15, 'x': -330}, {'at': 0.5, 'zoom': 1.08, 'x': -300, 'ms': 1000, 'ease': 'premium'}, {'at': 7.6, 'zoom': 1.0, 'x': 0, 'ms': 1200, 'ease': 'camera'}],
+    [{'at': 0, 'zoom': 1.1, 'x': -200}, {'at': 0.5, 'zoom': 1.06, 'x': -180, 'ms': 1000, 'ease': 'premium'}, {'at': 7.6, 'zoom': 1.0, 'x': 0, 'ms': 1200, 'ease': 'camera'}],
     tin={'type': 'wipe', 'dir': 'up'}, cues=[{'at': 4.4, 'sfx': 'click'}, {'at': 8.4, 'sfx': 'type', 'beats': 3}]),
   J('fork', 15, [card('t', 'SwFork', 1150, 500, 1460, y=70, chrome='none', props={'at': 0})],
     [{'at': 0, 'zoom': 0.96}, {'at': 0.5, 'zoom': 1.06, 'ms': 6500, 'ease': 'sine'}],
     tin='iris', tone='dark', cues=[{'at': 2, 'sfx': 'type', 'beats': 1.5}, {'at': 4, 'sfx': 'chime'}]),
   J('tests', 11, [card('ts', 'SwTests', 1300, 520, 1500, y=70, props={'at': 1})],
-    [{'at': 0, 'zoom': 1.2, 'x': -300, 'y': 0}, {'at': 0.5, 'zoom': 1.0, 'x': 0, 'y': 70, 'ms': 2600, 'ease': 'camera'}],
+    [{'at': 0, 'zoom': 1.1, 'y': 70}, {'at': 0.3, 'zoom': 1.0, 'y': 70, 'ms': 2600, 'ease': 'premium'}],
     tin='push', cues=[{'at': 1, 'sfx': 'count', 'beats': 4}, {'at': 5.2, 'sfx': 'chime'}]),
   J('live', 12, [card('l', 'SwLive', 1400, 700, 1500, y=70, chrome='none', props={'click': 4})],
-    [{'at': 0, 'zoom': 1.12, 'x': -280}, {'at': 0.4, 'zoom': 1.06, 'x': -250, 'ms': 1000, 'ease': 'premium'}, {'at': 5.2, 'zoom': 1.0, 'x': 0, 'ms': 1200, 'ease': 'camera'}],
+    [{'at': 0, 'zoom': 1.08, 'x': -120}, {'at': 0.4, 'zoom': 1.04, 'x': -100, 'ms': 1000, 'ease': 'premium'}, {'at': 5.2, 'zoom': 1.0, 'x': 0, 'ms': 1200, 'ease': 'camera'}],
     tin='zoom', cues=[{'at': 4, 'sfx': 'click'}, {'at': 5.2, 'sfx': 'drop'}]),
   {'id': 'outro', 'type': 'Outro', 'beats': 10, 'in': {'type': 'flood', 'color': '#1E5B4F'}, 'music': 'out',
    'props': {'name': 'Stepwell', 'markSvg': mark, 'line': 'First-loss cover for Morpho vaults on Arc.', 'url': 'stepwell-one.vercel.app', 'look': 'soft', 'qr': 'qr.svg', 'qrLabel': 'Try it on your phone'}},
@@ -67,8 +68,13 @@ film = {
             'panel': '#FFFEFC', 'panelBorder': 'rgba(23,21,15,0.06)'},
   'grain': 0.03,
   'scenes': scenes,
+  'captionDark': [],
   'captionTrack': json.loads((ROOT / 'captions.json').read_text()) if (ROOT / 'captions.json').exists() else [],
 }
+_t = 0
+for _s in scenes:
+    if _s.get('tone') == 'dark': film['captionDark'].append([_t * 0.5, (_t + _s['beats']) * 0.5])
+    _t += _s['beats']
 (ROOT / 'src/films/stepwell.json').write_text(json.dumps(film, indent=1))
 
 # voice placement in beats from the start of the film
