@@ -4,7 +4,7 @@ First-loss cover for USDC in Morpho vaults on Arc.
 
 When a vault loses money, underwriters take the loss before depositors do. Depositors pay for that with a slice of their interest, never out of pocket. Any wallet or app can add it, because a covered deposit is a standard ERC-4626 vault.
 
-[Live on Arc mainnet](https://stepwell-one.vercel.app) · [For reviewers](https://stepwell-one.vercel.app/reviewers) · [Factory on Sourcify](https://repo.sourcify.dev/5042/0xbD4FBE3B8759Efe6b87552F31B2776dF9c41158c) · [CI](https://github.com/kinnuworks/stepwell/actions) · Demo film: [link]
+[Live on Arc mainnet](https://stepwell-one.vercel.app) · [For reviewers](https://stepwell-one.vercel.app/reviewers) · [Factory on Sourcify](https://repo.sourcify.dev/5042/0xbD4FBE3B8759Efe6b87552F31B2776dF9c41158c) · [CI](https://github.com/kinnuworks/stepwell/actions) · [Demo film](https://youtu.be/M_1gqJF5pig)
 
 **Proof in one line:** on a fork of Arc mainnet, a 2% bad-debt markdown in the real Steakhouse Prime USDC vault cost cover 4.0 USDC and covered depositors 0.0 USDC. On mainnet itself, [this transaction](https://explorer.arc.io/tx/0x684d7d9a702675c0a8fa299e7fff7d8e3afce2f388ee7f3c90e78e1b6fa76f42) marked the rehearsal vault down 8%: cover took all $0.25, covered deposits stayed at $2.50, final 4.6 seconds after the button was pressed.
 

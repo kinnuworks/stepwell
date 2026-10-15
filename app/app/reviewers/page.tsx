@@ -16,6 +16,7 @@ export default function Reviewers() {
         <a className="t-small" href="/">← Back to Stepwell</a>
         <h1 className="t-h2" style={{ marginTop: 18 }}>For reviewers: three minutes.</h1>
         <ol className="limits" style={{ marginTop: 28, listStyle: "none" }}>
+          <li><b>0. Watch the 100-second film.</b> <a href="https://youtu.be/M_1gqJF5pig" target="_blank" rel="noreferrer">youtu.be/M_1gqJF5pig</a></li>
           <li><b>1. Press “Simulate an 8% vault loss” on the home page.</b> Our test vault, holding only our own USDC, sends 8% to our wallet on {NET}, which is how bad debt looks from outside. The cover layer shrinks and covered deposits stay where they were. Press it again to watch cover run out. No wallet needed.</li>
           <li><b>2. Look at the hero.</b> That well is the Stepwell on {REAL_VAULT_NAME}, a real Morpho vault, read live from the chain.</li>
           <li><b>3. Read the contract.</b> <span className="mono">contracts/src/Stepwell.sol</span>, about 670 lines. The waterfall is in <span className="mono">_split</span>.</li>
