@@ -86,3 +86,4 @@
 .final { background: url(/paper-steps.webp) center bottom / cover no-repeat, var(--bg-alt); padding-bottom: clamp(140px, 16vw, 220px); }
 
 .testnet-note { position: fixed; z-index: 40; left: 50%; bottom: 14px; transform: translateX(-50%); width: min(100% - 32px, 620px); margin: 0; padding: 10px 16px; border-radius: var(--r-md); background: var(--ink); color: var(--bg); font-size: 13.5px; line-height: 1.45; text-align: center; box-shadow: var(--shadow-2); }
+@media (max-width: 640px) { .testnet-note { bottom: 8px; padding: 7px 12px; font-size: 12px; } }
