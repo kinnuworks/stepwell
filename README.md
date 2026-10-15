@@ -54,12 +54,14 @@ Covered shares are ERC-4626 on the way out (withdraw, redeem, previews). Deposit
 
 ## Contracts
 
-| Contract | Arc mainnet |
-|---|---|
-| StepwellFactory | `[after deploy]` |
-| Stepwell on Steakhouse Prime USDC | `[after deploy]` |
-| Rehearsal Stepwell | `[after deploy]` |
-| RehearsalVault (holds only our own USDC) | `[after deploy]` |
+| Contract | Arc mainnet | Source |
+|---|---|---|
+| StepwellFactory | [`0xbD4FBE3B8759Efe6b87552F31B2776dF9c41158c`](https://explorer.arc.io/address/0xbD4FBE3B8759Efe6b87552F31B2776dF9c41158c) | [Sourcify, exact match](https://repo.sourcify.dev/5042/0xbD4FBE3B8759Efe6b87552F31B2776dF9c41158c) |
+| Stepwell on Steakhouse Prime USDC | [`0xe190E2356Ca31EE258364c06926474864a40aEE9`](https://explorer.arc.io/address/0xe190E2356Ca31EE258364c06926474864a40aEE9) | [Sourcify, exact match](https://repo.sourcify.dev/5042/0xe190E2356Ca31EE258364c06926474864a40aEE9) |
+| Rehearsal Stepwell | [`0xf46Ca7ccDDDF3Da25ee15912a38b7012903aD387`](https://explorer.arc.io/address/0xf46Ca7ccDDDF3Da25ee15912a38b7012903aD387) | [Sourcify, exact match](https://repo.sourcify.dev/5042/0xf46Ca7ccDDDF3Da25ee15912a38b7012903aD387) |
+| RehearsalVault (holds only our own USDC) | [`0xbC29dD7633b02F2E6024a60910924A38efA065b2`](https://explorer.arc.io/address/0xbC29dD7633b02F2E6024a60910924A38efA065b2) | [Sourcify, exact match](https://repo.sourcify.dev/5042/0xbC29dD7633b02F2E6024a60910924A38efA065b2) |
+
+Deploying and seeding all of it cost about 0.28 USDC in gas.
 
 No owner, no admin key, no upgrade path.
 

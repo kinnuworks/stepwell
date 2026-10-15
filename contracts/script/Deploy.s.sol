@@ -9,7 +9,7 @@ import {StepwellFactory} from "../src/StepwellFactory.sol";
 import {RehearsalVault} from "../src/RehearsalVault.sol";
 
 /// Deploys everything and seeds it from the deployer. The full plan uses about 13.6 USDC; with less
-/// in the wallet, every seed shrinks in proportion, keeping 0.6 USDC back for gas.
+/// in the wallet, every seed shrinks in proportion, keeping 1 USDC back for gas.
 ///   PRIVATE_KEY=0x... OPERATOR=0x... arc-forge script script/Deploy.s.sol --rpc-url arc --broadcast
 /// OPERATOR is the hot key the website's rehearsal button uses. It needs about 1 USDC for gas.
 contract Deploy is Script {
@@ -44,7 +44,7 @@ contract Deploy is Script {
         );
 
         // seeds out of 13.25 USDC: drill 1.5 cover + 6 deposit, Steakhouse 0.75 + 4, operator gas 1
-        uint256 spare = USDC.balanceOf(me) > 0.6e6 ? USDC.balanceOf(me) - 0.6e6 : 0;
+        uint256 spare = USDC.balanceOf(me) > 1e6 ? USDC.balanceOf(me) - 1e6 : 0;
         uint256 scale = spare >= 13.25e6 ? 1e6 : spare * 1e6 / 13.25e6;
         require(scale >= 0.1e6, "fund the deployer with at least 2 USDC");
 

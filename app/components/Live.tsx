@@ -70,12 +70,13 @@ export function Rehearsal() {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ text: string; err?: boolean } | null>(null);
   const [runs, setRuns] = useState<Run[]>([]);
-  useEffect(() => { if (state && start === null) setStart(state.covered + state.cover); }, [state, start]);
+  // the drawing's scale counts deposits still warming up, so settling one never overfills the well
+  useEffect(() => { if (state && start === null) setStart(state.covered + state.cover + state.settling); }, [state, start]);
 
   async function go(action: "drought" | "rain") {
     if (!state) return;
     setBusy(true);
-    const before = { s: state.covered, j: state.cover };
+    const before = { s: state.covered, w: state.settling, j: state.cover };
     setMsg({ text: action === "drought" ? `Marking the vault down by 8% on ${NET}…` : "Putting the lost money back…" });
     try {
       const r = await fetch("/api/rehearse", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action }) });
@@ -85,7 +86,7 @@ export function Rehearsal() {
       await refresh();
       setRuns((x) => [{ label: action === "drought" ? "Vault lost 8%" : "Money put back", hash: j.hash, ms: j.settledMs }, ...x].slice(0, 4));
       if (action === "drought") {
-        const lost = before.s + before.j - (after.covered + after.cover);
+        const lost = before.s + before.w + before.j - (after.covered + after.settling + after.cover);
         const fromCover = before.j - after.cover;
         setMsg({
           text: after.lossPassedThrough > state.lossPassedThrough
