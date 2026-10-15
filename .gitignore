@@ -13,3 +13,7 @@ design/
 .operator-wallet.json
 .testnet-wallet.json
 app/.vercel/
+video/node_modules/
+video/out/
+video/build/
+video/public/voice/

@@ -1,0 +1,62 @@
+[
+ {
+  "file": "public/voice/l01.mp3",
+  "sec": 0.2
+ },
+ {
+  "file": "public/voice/l02.mp3",
+  "sec": 7.0
+ },
+ {
+  "file": "public/voice/l03.mp3",
+  "sec": 15.3
+ },
+ {
+  "file": "public/voice/l04.mp3",
+  "sec": 23.8
+ },
+ {
+  "file": "public/voice/l05.mp3",
+  "sec": 31.3
+ },
+ {
+  "file": "public/voice/l06.mp3",
+  "sec": 33.8
+ },
+ {
+  "file": "public/voice/l07.mp3",
+  "sec": 39.75
+ },
+ {
+  "file": "public/voice/l08.mp3",
+  "sec": 45.25
+ },
+ {
+  "file": "public/voice/l09.mp3",
+  "sec": 53.25
+ },
+ {
+  "file": "public/voice/l10.mp3",
+  "sec": 59.3
+ },
+ {
+  "file": "public/voice/l11.mp3",
+  "sec": 69.3
+ },
+ {
+  "file": "public/voice/l12.mp3",
+  "sec": 76.8
+ },
+ {
+  "file": "public/voice/l13.mp3",
+  "sec": 84.3
+ },
+ {
+  "file": "public/voice/l14.mp3",
+  "sec": 89.8
+ },
+ {
+  "file": "public/voice/l15.mp3",
+  "sec": 96.25
+ }
+]
