@@ -1,5 +1,5 @@
 import { listVaults } from "@/lib/vaults";
-import { explorer } from "@/lib/config";
+import { explorer, NET } from "@/lib/config";
 import OpenStepwell from "@/components/OpenStepwell";
 
 export const revalidate = 60;
@@ -49,7 +49,7 @@ export default async function Vaults({ searchParams }: { searchParams: Promise<{
           </table>
         </div>
         {hidden > 0 && <p className="t-small" style={{ marginTop: 14 }}><a href="/vaults?all=1" style={{ textDecoration: "underline" }}>Show {hidden} test and dust vaults under $10k</a></p>}
-        <p className="t-micro" style={{ marginTop: 14 }}>Instant cash is what Morpho&apos;s API reports as withdrawable now; vaults lending into the same markets share it, so several show the same figure. Vault figures from Morpho&apos;s public API, refreshed every five minutes. Cover figures read from the Stepwell factory on Arc mainnet.</p>
+        <p className="t-micro" style={{ marginTop: 14 }}>Instant cash is what Morpho&apos;s API reports as withdrawable now; vaults lending into the same markets share it, so several show the same figure. Vault figures from Morpho&apos;s public API, refreshed every five minutes. Cover figures read from the Stepwell factory on {NET}.</p>
       </div>
     </main>
   );

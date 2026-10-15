@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { createWalletClient, custom, encodeFunctionData, keccak256, parseUnits, toHex, type Address } from "viem";
 import WellDrawing from "./WellDrawing";
 import { readWell, KIND_LABEL, publicClient, type WellState } from "@/lib/chain";
-import { ADDR, arc, explorer, REAL_VAULT_NAME } from "@/lib/config";
+import { ADDR, arc, explorer, REAL_VAULT_NAME, NET, TESTNET } from "@/lib/config";
 import { stepwellAbi } from "@/lib/abi";
 
 const money = (n: number) => "$" + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -50,7 +50,7 @@ export function HeroWell() {
           <WellDrawing covered={state.covered} cover={state.cover} scaleTotal={total} />
           <Readout s={state} />
           <div className="window__foot">
-            <span>Read from Arc mainnet, block {state.block.toString()}</span>
+            <span>Read from {NET}, block {state.block.toString()}</span>
             <a href={explorer("address", ADDR.real)} target="_blank" rel="noreferrer">contract</a>
           </div>
         </>
@@ -76,7 +76,7 @@ export function Rehearsal() {
     if (!state) return;
     setBusy(true);
     const before = { s: state.covered, j: state.cover };
-    setMsg({ text: action === "drought" ? "Marking the vault down by 8% on Arc mainnet…" : "Putting the lost money back…" });
+    setMsg({ text: action === "drought" ? `Marking the vault down by 8% on ${NET}…` : "Putting the lost money back…" });
     try {
       const r = await fetch("/api/rehearse", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action }) });
       const j = await r.json();
@@ -106,7 +106,7 @@ export function Rehearsal() {
   return (
     <div className="try">
       <div className="card">
-        <div className="eyebrow"><span className="dot" />Real transactions on Arc mainnet</div>
+        <div className="eyebrow"><span className="dot" />Real transactions on {NET}</div>
         <h3 className="t-h3" style={{ marginTop: 12 }}>Go on, break it.</h3>
         <p className="t-small" style={{ marginTop: 10 }}>
           This well sits on a small test vault holding our own {state ? money(state.covered + state.cover + state.settling) : "few dollars"}.
@@ -362,6 +362,7 @@ export function StakeBadge() {
   const real = useWell(ADDR.real, 15000).state;
   const drill = useWell(ADDR.drill, 15000).state;
   const total = real && drill ? real.covered + real.cover + real.settling + drill.covered + drill.cover + drill.settling : null;
+  if (TESTNET) return <span className="badge badge--dot">Live on Arc testnet · test money</span>;
   return <span className="badge badge--dot">Live on Arc mainnet{total !== null ? ` · ${money(total)} at stake, mostly ours` : ""}</span>;
 }
 

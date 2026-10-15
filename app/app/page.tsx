@@ -1,8 +1,8 @@
 import { HeroWell, Rehearsal, Books, DepositPanel, LiveStats, StakeBadge } from "@/components/Live";
 import Reveal from "@/components/Reveal";
-import { ADDR, REPO_URL, REAL_VAULT_NAME, TESTNET, explorer } from "@/lib/config";
+import { ADDR, REPO_URL, REAL_VAULT_NAME, TESTNET, NET, explorer } from "@/lib/config";
 
-const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://stepwell.vercel.app";
+const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://stepwell-one.vercel.app";
 
 const Icon = ({ d }: { d: string }) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={d} /></svg>
@@ -42,7 +42,7 @@ export default function Home() {
                 the rest reaches depositors, and this page shows you exactly how much cover there is.
               </p>
               <div className="cta-row">
-                <a className="btn btn-candy btn-lg" href="#try">Simulate a loss on mainnet</a>
+                <a className="btn btn-candy btn-lg" href="#try">Simulate a loss on {TESTNET ? "testnet" : "mainnet"}</a>
                 <a className="btn btn-outline btn-lg" href="#apps">Add cover to your app</a>
               </div>
               <p className="trust"><span>No owner key</span><span>Covered depositors leave any time</span><span>Unaudited, small amounts</span></p>
@@ -172,8 +172,8 @@ export default function Home() {
           <div className="container">
             <div className="section-head">
               <div className="eyebrow"><span className="dot" />Try it on this page</div>
-              <h2>Watch cover take a loss, on mainnet.</h2>
-              <p className="lead">Every press is a real transaction on Arc mainnet. The receipt and the time from your click to a final result appear under the button.</p>
+              <h2>Watch cover take a loss, on {TESTNET ? "testnet" : "mainnet"}.</h2>
+              <p className="lead">Every press is a real transaction on {NET}. The receipt and the time from your click to a final result appear under the button.</p>
             </div>
             <Rehearsal />
           </div>

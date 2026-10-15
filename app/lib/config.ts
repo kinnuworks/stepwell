@@ -26,5 +26,6 @@ export const ADDR = {
 export const REAL_VAULT_NAME = "Steakhouse Prime USDC";
 export const REPO_URL = process.env.NEXT_PUBLIC_REPO_URL ?? "https://github.com/";
 export const TESTNET = arc.id !== 5042;
+export const NET = TESTNET ? "Arc testnet" : "Arc mainnet";
 export const explorer = (kind: "tx" | "address", v: string) => `${arc.blockExplorers.default.url}/${kind}/${v}`;
 export const sourcify = (addr: string) => `https://repo.sourcify.dev/${arc.id}/${addr}`;

@@ -4,7 +4,7 @@ First-loss cover for USDC in Morpho vaults on Arc.
 
 When a vault loses money, underwriters take the loss before depositors do. Depositors pay for that with a slice of their interest, never out of pocket. Any wallet or app can add it, because a covered deposit is a standard ERC-4626 vault.
 
-Live site: `[link after deploy]` · For reviewers: `/reviewers`
+Live site: https://stepwell-one.vercel.app · For reviewers: `/reviewers`
 
 ## Why it exists
 
